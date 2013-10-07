@@ -1,27 +1,19 @@
 {
-  "name": "{{name}}",
+  "name": "lib-asset",
   "version": "0.0.1",
-  "description": "{{description}}",
-  "homepage": "http://github.com/UsabilityDynamics/{{name}}",
+  "description": "Asset handler.",
+  "homepage": "http://github.com/UsabilityDynamics/lib-asset",
   "private": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/UsabilityDynamics/{{name}}"
+    "url": "https://github.com/UsabilityDynamics/lib-asset"
   },
-  "dependencies": {
-    "usabilitydynamics/lib-utility": "*"
-  },  
-  "templates": [],
-  "files": [
-    "files/{{name}}-schema.json"
+  "dependencies": {},
+  "libs": [
+    "libs/asset.php"
   ],
-  "styles": [
-    "styles/{{name}}.css"
-  ],
-  "scripts": [
-    "scripts/{{name}}.js",
-    "scripts/{{name}}.php"
-  ],
+  "styles": [],
+  "scripts": [],
   "authors": [
     {
       "name": "Andy Potanin",
