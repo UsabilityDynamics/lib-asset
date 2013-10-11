@@ -10,7 +10,7 @@
   },
   "dependencies": {},
   "libs": [
-    "libs/asset.php"
+    "lib/asset.php"
   ],
   "styles": [],
   "scripts": [],

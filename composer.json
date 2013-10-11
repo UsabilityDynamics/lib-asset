@@ -13,9 +13,8 @@
     }
   ],
   "autoload": {
-    "UsabilityDynamics": "libs/",
     "files": [
-      "libs/asset.php"
+      "lib/asset.php"
     ]
   },
   "homepage": "http://github.com/usabilitydynamics/lib-asset",
