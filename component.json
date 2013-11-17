@@ -9,7 +9,7 @@
     "url": "https://github.com/UsabilityDynamics/lib-asset"
   },
   "dependencies": {},
-  "libs": [
+  "lib": [
     "lib/asset.php"
   ],
   "styles": [],
