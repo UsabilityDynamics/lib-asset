@@ -13,7 +13,7 @@
     }
   ],
   "autoload": {
-    "files": [
+    "classmap": [
       "lib/asset.php"
     ]
   },
