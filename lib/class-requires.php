@@ -28,6 +28,33 @@ namespace UsabilityDynamics {
     class Requires {
 
       /**
+       * Instance Name.
+       *
+       * @public
+       * @property $name
+       * @type {Object}
+       */
+      public $name = null;
+
+      /**
+       * Instance Path.
+       *
+       * @public
+       * @property $path
+       * @type {Object}
+       */
+      public $path = null;
+
+      /**
+       * Library Server.
+       *
+       * @public
+       * @property $server
+       * @type {Object}
+       */
+      public $server = '//cdn.udx.io/require.js';
+
+      /**
        * Constructor.
        *
        * args.path - relative path to home to serve data-main
@@ -41,29 +68,132 @@ namespace UsabilityDynamics {
       function __construct( $_atts = array() ) {
 
         $args = (object) shortcode_atts( array(
-          'name'  => false,
-          'path'  => '/scripts/app.state.js',
-          'version' => '1.0',
+          'name'  => 'app.state',
+          'path'  => '/scripts/',
+          'scope'  => [ 'public' ],
           'debug' => defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? true : false
         ), $_atts );
 
+        // Force Array.
+        $this->scope = (array) $args->scope;
 
-        // Generate Name.
-        if( !$args->name ) {
-          $args->name = str_replace( '.js', '', basename( $args->path || 'scripts/app.state.js' ) );
+        // Set Instance Properties.
+        $this->name = $args->name  ? $args->name : str_replace( '.js', '', basename( $args->path || '/app.state.js' ) );
+        $this->path = ( $args->path ? $args->path : $args->name ) . $this->name . '.js' ;
+        $this->debug = $args->debug ?  $args->debug : false;
+
+        if( in_array( 'public', $this->scope ) ) {
+          $this->public = true;
         }
 
-        if( !$args->path ) {
-          $args->path = $args->name;
+        if( in_array( 'preview', $this->scope ) ) {
+          $this->preview = true;
         }
 
-        if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === $args->path ) {
+        if( in_array( 'backend', $this->scope ) ) {
+          $this->backend = true;
+        }
+
+        if( in_array( 'login', $this->scope ) ) {
+          $this->login = true;
+        }
+
+        if( in_array( 'customizer', $this->scope ) ) {
+          $this->customizer = true;
+        }
+
+        // die( '<pre>' . print_r( $this, true ) . '</pre>' );
+
+        // Bind Actions.
+        add_action( 'admin_enqueue_scripts', array( &$this, 'admin_enqueue_scripts' ) );
+
+        add_action( 'wp_head', array( &$this, '_render_tag' ), 100 );
+        add_action( 'admin_print_scripts', array( &$this, '_render_tag' ), 100 );
+        add_action( 'customize_controls_print_scripts', array( &$this, '_render_tag' ), 100 );
+        add_action( 'customize_preview_init', array( &$this, '_render_tag' ), 100 );
+        add_action( 'login_enqueue_scripts', array( &$this, '_render_tag' ), 100 );
+
+        // Serve Scripts.
+        add_action( 'admin_init', array( &$this, '_render_scripts' ) );
+        add_action( 'template_redirect', array( &$this, '_render_scripts' ) );
+
+        // Footer Script Loadering.
+        // add_action( 'wp_footer', array( &$this, '_render_tag' ) );
+        // add_action( 'customize_controls_print_footer_scripts', array( &$this, '_render_tag' ) );
+
+      }
+
+      /**
+       * General Admin Scripts.
+       *
+       * @todo The frontent preview is using incorrect action; "customize_preview_init" is triggered on body not in head.
+       *
+       * @action login_enqueue_scripts - Login page header scripts.
+       * @action customize_controls_print_scripts - Customizer Interface Scripts.
+       * @action admin_print_scripts - Customizer Interface Scripts.
+       * @action wp_head - Frontend header scripts.
+       * @action wp_footer - Frontend header scripts.
+       */
+      public function _render_tag() {
+
+        // Standard Admin.
+        if( current_filter() == 'admin_print_scripts' && $this->backend ) {
+          echo '<script data-scope="admin" id="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+        }
+
+        // Admin Customizer Controls.
+        if( current_filter() == 'customize_controls_print_scripts' && $this->customizer ) {
+          echo '<script data-scope="customizer" id="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+        }
+
+        // Login Scripts.
+        if( current_filter() == 'login_enqueue_scripts' && $this->login ) {
+          echo '<script data-scope="login" id="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+        }
+
+        // Public Frontend.
+        if( current_filter() == 'wp_head' && $this->public ) {
+          echo '<script data-scope="public" id="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+        }
+
+        // Frontned Customization Preview.
+        if( current_filter() == 'customize_preview_init' && $this->preview ) {
+          echo '<script data-scope="preview" id="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+        }
+
+      }
+
+      /**
+       * JavaScript in Preview Scripts.
+       *
+       */
+      public function customize_preview_init() {
+
+      }
+
+      /**
+       * Frontned Scripts.
+       *
+       */
+      public function wp_enqueue_scripts() {
+
+      }
+
+      /**
+       * Serve Scripts.
+       *
+       * @action template_redirect
+       * @action admin_init
+       */
+      function _render_scripts() {
+
+        if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === $this->path ) {
 
           // Generate Action Handler.
-          do_action( 'ud:requires', $args );
+          do_action( 'ud:requires', $this );
 
           // Instance Action Handler.
-          do_action( 'ud:requires:' . $args->name );
+          do_action( 'ud:requires:' . $this->name );
 
           // Set Headers.
           add_filter( 'nocache_headers', function( $headers ) {
@@ -107,13 +237,13 @@ namespace UsabilityDynamics {
           ));
 
           $_output = array(
-            '/** ---- ' . $args->name . ' ----- */',
+            '/** ---- ' . $this->name . ' ----- */',
             'require.config(' . json_encode( (array) $_config, JSON_FORCE_OBJECT ) . ');',
             'require();'
           );
 
-          if( $args->debug ) {
-            $_output[] = 'console.log( "ud.requires", "' . $args->name .'");';
+          if( $this->debug ) {
+            $_output[] = 'console.log( "ud.requires", "' . $this->name .'");';
             $_output[] = 'console.log( "ud.requires.config", ' . json_encode( (array) $_config, JSON_FORCE_OBJECT ) . ');';
           }
 
