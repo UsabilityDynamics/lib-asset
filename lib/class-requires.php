@@ -55,6 +55,15 @@ namespace UsabilityDynamics {
       public $server = '//cdn.udx.io/require.js';
 
       /**
+       * Instance Settings.
+       *
+       * @public
+       * @property $_settings
+       * @type {Object}
+       */
+      public $_settings = false;
+
+      /**
        * Rendered Flag.
        *
        * @public
@@ -64,21 +73,39 @@ namespace UsabilityDynamics {
       public static $_rendered = false;
 
       /**
+       * Singleton Instance Reference.
+       *
+       * @public
+       * @static
+       * @property $instance
+       * @type {Object}
+       */
+      public static $instance = false;
+
+      /**
        * Constructor.
        *
        * args.path - relative path to home to serve data-main
        *
        * @todo Add output cleaning to remove any errors or warnigns.
        * @todo Add logic to not serve JS until template_redirect action to let JS deps register.
+       * @todo Instane / settings should probably be based on scope since only a single requires.js instance can be handled per view.
        *
        * @param array $_atts
        * @internal param array|mixed $args .path
        */
       function __construct( $_atts = array() ) {
 
+        // Return Singleton Instance.
+        if( self::$instance ) {
+          //return self::$instance;
+        }
+
+        // Save Instance.
+        //self::$instance = &$this;
+
         $args = (object) shortcode_atts( array(
           'name'  => 'app.state',
-          'path'  => '/scripts/',
           'scope'  => [ 'public' ],
           'debug' => defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? true : false
         ), $_atts );
@@ -88,8 +115,15 @@ namespace UsabilityDynamics {
 
         // Set Instance Properties.
         $this->name = self::create_slug( $args->name  ? $args->name : str_replace( '.js', '', basename( $args->path || '/app.state.js' ) ), array( 'separator' => '-' ) );
-        $this->path = ( $args->path ? $args->path : $args->name ) . $this->name . '.js' ;
+        $this->path = ( $args->path ? $args->path : '/scripts/' ) . $this->name . '.js' ;
         $this->debug = $args->debug ?  $args->debug : false;
+
+        // Create Runtime Settings Instance.
+        $this->_settings = new \UsabilityDynamics\Settings(array(
+          'id' => $this->name,
+          'namespace' => 'UsabilityDynamics\Requires',
+          'runtime' => true
+        ));
 
         if( in_array( 'public', $this->scope ) ) {
           $this->public = true;
@@ -127,6 +161,19 @@ namespace UsabilityDynamics {
         // Serve Scripts.
         add_action( 'admin_init', array( &$this, '_render_script' ) );
         add_action( 'template_redirect', array( &$this, '_render_script' ) );
+
+        // @chainable.
+        return $this;
+
+      }
+
+      /**
+       * Add Library / Dependencies
+       *
+       * @param string $lib
+       * @param array  $deps
+       */
+      public function add( $lib = '', $deps = array() ) {
 
       }
 
@@ -179,22 +226,6 @@ namespace UsabilityDynamics {
           echo '<script data-scope="preview" data-name="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
           self::$_rendered = true;
         }
-
-      }
-
-      /**
-       * JavaScript in Preview Scripts.
-       *
-       */
-      public function customize_preview_init() {
-
-      }
-
-      /**
-       * Frontned Scripts.
-       *
-       */
-      public function wp_enqueue_scripts() {
 
       }
 
@@ -275,6 +306,96 @@ namespace UsabilityDynamics {
 
         }
 
+      }
+
+      /**
+       * Error Handler
+       *
+       * @param $errno
+       * @param $errstr
+       * @param $errfile
+       * @param $errline
+       *
+       * @param $errfile
+       *
+       * @return bool
+       */
+      public static function error_handler( $errno = null, $errstr = '', $errfile = null, $errline = null ) {
+
+        // This error code is not included in error_reporting
+        if( !( error_reporting() & $errno ) ) {
+          return;
+        }
+
+        switch( $errno ) {
+
+          // Fatal
+          case E_ERROR:
+          case E_CORE_ERROR:
+          case E_RECOVERABLE_ERROR:
+          case E_COMPILE_ERROR:
+          case E_USER_ERROR:
+            wp_die( "<h1>Website Temporarily Unavailable</h1><p>We apologize for the inconvenience and will return shortly.</p>" );
+            break;
+
+          // Do Nothing
+          case E_WARNING:
+          case E_USER_NOTICE:
+            return true;
+            break;
+
+          // No Idea.
+          default:
+            return;
+            // wp_die( "<h1>Website Temporarily Unavailable</h1><p>We apologize for the inconvenience and will return shortly.</p>" );
+            break;
+        }
+
+        return true;
+
+      }
+
+      /**
+       * Get Setting.
+       *
+       * @method get
+       *
+       * @for Requires
+       * @author potanin@UD
+       * @since 0.1.1
+       */
+      public static function get( $key, $default = null ) {
+        return self::$instance->_settings ? self::$instance->_settings->get( $key, $default ) : null;
+      }
+
+      /**
+       * Set Setting.
+       *
+       * @usage
+       *
+       * @method get
+       * @for Requires
+       *
+       * @author potanin@UD
+       * @since 0.1.1
+       */
+      public static function set( $key, $value = null ) {
+        return self::$instance->_settings ? self::$instance->_settings->set( $key, $value ) : null;
+      }
+
+      /**
+       * Get the Cluster Singleton
+       *
+       * Concept based on the CodeIgniter get_instance() concept.
+       *
+       * @static
+       * @return object
+       *
+       * @method get_instance
+       * @for Requires
+       */
+      public static function &get_instance() {
+        return self::$instance;
       }
 
     }
