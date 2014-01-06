@@ -1,23 +1,29 @@
+
 {
-  "name": "usabilitydynamics/lib-asset",
-  "keywords": [ "api" ],
-  "type": "library",
+  "name": "usabilitydynamics/lib-requires",
+  "keywords": [
+    "require.js",
+    "udx.io",
+    "adm",
+    "javascript",
+    "api"
+  ],
   "require": {
     "usabilitydynamics/lib-utility": "*"
   },
   "minimum-stability": "dev",
   "repositories": [
     {
-      "type": "vcs",
-      "url": "https://github.com/UsabilityDynamics/lib-utility"
+      "type": "composer",
+      "url": "http://repository.usabilitydynamics.com"
     }
   ],
   "autoload": {
     "classmap": [
-      "lib/asset.php"
+      "lib"
     ]
   },
-  "homepage": "http://github.com/usabilitydynamics/lib-asset",
+  "homepage": "http://github.com/usabilitydynamics/lib-requires",
   "authors": [
     {
       "name": "Andy Potanin",
@@ -39,7 +45,7 @@
     }
   ],
   "support": {
-    "issues": "https://github.com/usabilitydynamics/lib-asset/issues"
+    "issues": "https://github.com/usabilitydynamics/lib-requires/issues"
   },
   "license": "MIT"
 }
