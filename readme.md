@@ -1,3 +1,7 @@
+## Concepts
+
+ - Typically only one require.js <script> tag is expected per HTML page, but multiple may be supported in the future.
+
 ## Size
 
   17.7 KB minified
@@ -6,18 +10,28 @@
 ## Usage
 
 ### In Header
-  <script data-main="/scripts/app.state.js" src="//cdn.udx.io/require.js"></script>
+  <script data-main="/js/main" src="//cdn.udx.io/require.js"></script>
 
 ### In Body
+
+  <div data-requires="udx.wp-property.supermap"></div>
+  <div data-requires="udx.elastic-filter"></div>
+  <div data-requires="crowdfavorite.carrington-build.slider"></div>
+  <div data-requires="bootstrap.carousel"></div>
 
 ### Initialize WordPress Handler
 
   // Enable JavaScript Library Loading.
-  new \UsabilityDynamics\Requires(array(
-    'path' => '/scripts/app.state.js',
-    'debug' => true
-  ));
+  $_requires = new \UsabilityDynamics\Requires;
 
+  // Update Settings.
+  $_requires->set( 'paths', '/scripts/app.state.js' );
+  $_requires->set( 'scopes', 'public' );
+  $_requires->set( 'debug', true );
+
+  // Add Libraries.
+  $_requires->add( 'ui.wpp.supermap' );
+  $_requires->add( 'ui.elastic-filter' );
 
 ## License
 
