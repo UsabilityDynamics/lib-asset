@@ -1,3 +1,19 @@
+## Usage
+
+### In Header
+  <script data-main="/scripts/app.state.js" src="//cdn.udx.io/require.js"></script>
+
+### In Body
+
+### Initialize WordPress Handler
+
+  // Enable JavaScript Library Loading.
+  new \UsabilityDynamics\Requires(array(
+    'path' => '/scripts/app.state.js',
+    'debug' => true
+  ));
+
+
 ## License
 
 (The MIT License)
