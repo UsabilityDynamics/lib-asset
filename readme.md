@@ -1,3 +1,8 @@
+## Size
+
+  17.7 KB minified
+  69.8 KB unminified.
+
 ## Usage
 
 ### In Header
