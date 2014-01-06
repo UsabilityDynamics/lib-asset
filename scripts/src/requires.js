@@ -20,6 +20,12 @@ var requirejs, require, define;
 
       packages = packages || [];
 
+      console.log( 'packages', packages );
+
+      if( 'function' !== typeof packages.push ) {
+        //return packages;
+      }
+
       packages.push({
         location: 'http://cdn.udx.io/ace',
         main: 'ace',
@@ -32,6 +38,14 @@ var requirejs, require, define;
     dynamic_loading: function dynamic_loading( deps, callback, errback ) {
       // // console.log( 'udx', 'dynamic_loading' );
 
+      // var _basic_array = [];
+
+      // for( var key in deps ) { if (deps.hasOwnProperty(key)){ _basic_array.push(deps[key]); } }
+
+      //arguments[0] = _basic_array;
+
+      //console.log( 'deps', deps );
+      //console.log( '_basic_array', _basic_array );
       var context = this;
 
       jQuery( document ).on( 'ready', function() {
@@ -65,6 +79,8 @@ var requirejs, require, define;
         });
 
       });
+
+      //return _basic_array;
 
     }
   };
@@ -292,6 +308,8 @@ var requirejs, require, define;
     config.paths[ 'ui.wp.editor.style' ] = "//cdn.udx.io/ui.wp.editor.style";
     config.paths[ 'ui.wp.customizer.style' ] = "//cdn.udx.io/ui.wp.customizer.style";
     config.paths[ 'ui.wp.customizer.script' ] = "//cdn.udx.io/ui.wp.customizer.script";
+
+    // console.log( 'config.paths', config.paths );
 
     /**
      * Trims the . and .. from an array of path segments.
@@ -835,6 +853,12 @@ var requirejs, require, define;
         //"shim" deps are passed in here directly, and
         //doing a direct modification of the depMaps array
         //would affect that config.
+
+        // Deps is an object not an array.
+        if( 'object' === typeof depMaps && 'function' !== typeof depMaps.slice ) {
+          depMaps = [ depMaps[0] ];
+        }
+
         this.depMaps = depMaps && depMaps.slice(0);
 
         this.errback = errback;

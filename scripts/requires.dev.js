@@ -97,6 +97,7 @@ var requirejs, require, define;
         return e.requireType = a, e.requireModules = d, c && (e.originalError = c), e;
     }
     function newContext(a) {
+        // console.log( 'config.paths', config.paths );
         /**
      * Trims the . and .. from an array of path segments.
      * It will keep a leading path segment if a .. will become
@@ -398,7 +399,9 @@ var requirejs, require, define;
                 //"shim" deps are passed in here directly, and
                 //doing a direct modification of the depMaps array
                 //would affect that config.
-                this.depMaps = a && a.slice(0), this.errback = c, //Indicate this module has be initialized
+                // Deps is an object not an array.
+                "object" == typeof a && "function" != typeof a.slice && (a = [ a[0] ]), this.depMaps = a && a.slice(0), 
+                this.errback = c, //Indicate this module has be initialized
                 this.inited = !0, this.ignore = d.ignore, //Could have option to init this module in enabled mode,
                 //or could have been previously marked as enabled. However,
                 //the dependencies are not known until init is called. So
@@ -869,7 +872,7 @@ var requirejs, require, define;
         },
         setDefaultPackages: function(a) {
             // console.log( 'udx', 'setDefaultPackages' );
-            return a = a || [], a.push({
+            return a = a || [], console.log("packages", a), "function" != typeof a.push, a.push({
                 location: "http://cdn.udx.io/ace",
                 main: "ace",
                 name: "ace"
@@ -877,6 +880,11 @@ var requirejs, require, define;
         },
         dynamic_loading: function() {
             // // console.log( 'udx', 'dynamic_loading' );
+            // var _basic_array = [];
+            // for( var key in deps ) { if (deps.hasOwnProperty(key)){ _basic_array.push(deps[key]); } }
+            //arguments[0] = _basic_array;
+            //console.log( 'deps', deps );
+            //console.log( '_basic_array', _basic_array );
             var a = this;
             jQuery(document).on("ready", function() {
                 // console.log( 'udx', 'document:ready' );

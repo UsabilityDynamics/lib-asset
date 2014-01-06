@@ -44,14 +44,14 @@ namespace UsabilityDynamics {
        * @type {Object}
        */
       public $path = null;
-      
+
       /**
        * Public View.
        *
        * @public
        * @property $public
        * @type {Object}
-       */      
+       */
       public $public = false;
 
       /**
@@ -113,20 +113,39 @@ namespace UsabilityDynamics {
         // Save Instance.
         //self::$instance = &$this;
 
-        $args = (object) shortcode_atts( array(
-          'name'  => 'app.state',
-          'path' => '/',
-          'scope'  => array( 'public' ),
-          'debug' => defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? true : false
-        ), $_atts );
+        $args = (object) wp_parse_args( $_atts, array(
+          'name'  => 'main',
+          'path' => '/script/',
+          'packages'  => array(),
+          'shim'  => array(),
+          'paths'  => array(
+            'ajax' => esc_url( admin_url( 'admin-ajax.php' ) ),
+            'home' => esc_url( home_url( '/' ) ),
+            'login' => wp_login_url()
+          ),
+          'deps'  => array(),
+          'scope'  => array(),
+          'config' => array(
+            'debug' => defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? true : false,
+            'browser'  => array(
+              'mobile' => wp_is_mobile(),
+              'ios' => wp_is_mobile() && preg_match( '/iPad|iPod|iPhone/', $_SERVER['HTTP_USER_AGENT'] ),
+            )
+          )
+        ));
 
         // Force Array.
         $this->scope = (array) $args->scope;
 
         // Set Instance Properties.
-        $this->name = self::create_slug( $args->name  ? $args->name : str_replace( '.js', '', basename( $args->path || '/app.state.js' ) ), array( 'separator' => '-' ) );
+        $this->name = self::create_slug( $args->name  ? $args->name : str_replace( '.js', '', basename( $args->path || '/main.js' ) ), array( 'separator' => '-' ) );
         $this->path = ( $args->path ? $args->path : '/scripts/' ) . $this->name . '.js' ;
-        $this->debug = $args->debug ?  $args->debug : false;
+        $this->deps = (array) $args->deps;
+        $this->shim = (array) $args->shim;
+        $this->scope = (array) $args->scope;
+        $this->packages = (array) $args->packages;
+        $this->paths =(object) $args->paths;
+        $this->config =(object) $args->config;
 
         // Create Runtime Settings Instance.
         $this->_settings = new \UsabilityDynamics\Settings(array(
@@ -158,8 +177,6 @@ namespace UsabilityDynamics {
         $this->context = self::create_slug( $args->name, array( 'separator' => '_' ) );
 
         // Bind Actions.
-        add_action( 'admin_enqueue_scripts', array( &$this, 'admin_enqueue_scripts' ) );
-
         add_action( 'wp_head', array( &$this, '_render_tag' ), 100 );
         add_action( 'wp_footer', array( &$this, '_render_tag' ), 100 );
         add_action( 'admin_print_scripts', array( &$this, '_render_tag' ), 100 );
@@ -210,7 +227,6 @@ namespace UsabilityDynamics {
         if( current_filter() == 'admin_print_scripts' && $this->backend ) {
           echo '<script data-scope="admin" data-name="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
           self::$_rendered = true;
-
         }
 
         // Admin Customizer Controls.
@@ -284,30 +300,28 @@ namespace UsabilityDynamics {
           http_response_code( 200 );
 
           $_config = apply_filters( 'ud:requires:config', array(
-            // 'baseUrl' => home_url(),
-            // 'packages' => [],
+            // 'baseUrl' => home_url( 'scripts/vendor' ),
+            // 'urlArgs' => array(),
             'context' => $this->context,
-            'paths' => array(
-              'ajax' => esc_url( admin_url( 'admin-ajax.php' ) ),
-              'home' => esc_url( home_url( '/' ) ),
-              'login' => wp_login_url(),
-              "jquery" => ""
-            ),
-            'browser'  => array(
-              'mobile' => wp_is_mobile(),
-              'ios' => wp_is_mobile() && preg_match( '/iPad|iPod|iPhone/', $_SERVER['HTTP_USER_AGENT'] ),
-            )
+            'paths' => (object) $this->paths,
+            //'packages' => (array) $this->packages,
+            'deps'  => (array) $this->deps,
+            'config'  => $this->config
           ));
 
+          //die( '<pre>' . print_r( $_config, true ) . '</pre>' );
+
           $_output = array(
-            '/** ---- ' . $this->name . ' ----- */',
-            'require(' . json_encode( (array) $_config, JSON_FORCE_OBJECT ) . ');',
+            '/** ---- ' . $this->name . ' ----- */'
           );
 
-          if( $this->debug ) {
+          if( $this->config->debug ) {
             $_output[] = 'console.log( "ud.requires", "' . $this->name .'");';
-            $_output[] = 'console.log( "ud.requires.config", ' . json_encode( (array) $_config, JSON_FORCE_OBJECT ) . ');';
+            $_output[] = 'console.log( "ud.requires.config", ' . json_encode( (object) $_config ) . ');';
           }
+
+          $_output[] = 'require.config(' . json_encode( (object) $_config ) . ');';
+          $_output[] = 'require( [], function() { console.log( "app done", arguments ); } );';
 
           do_action( 'ud:requires:output', $_output );
 
