@@ -44,6 +44,15 @@ namespace UsabilityDynamics {
        * @type {Object}
        */
       public $path = null;
+      
+      /**
+       * Public View.
+       *
+       * @public
+       * @property $public
+       * @type {Object}
+       */      
+      public $public = false;
 
       /**
        * Library Server.
@@ -106,7 +115,8 @@ namespace UsabilityDynamics {
 
         $args = (object) shortcode_atts( array(
           'name'  => 'app.state',
-          'scope'  => [ 'public' ],
+          'path' => '/',
+          'scope'  => array( 'public' ),
           'debug' => defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? true : false
         ), $_atts );
 
