@@ -128,8 +128,9 @@ namespace UsabilityDynamics {
           'config' => array(
             'debug' => defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? true : false,
             'browser'  => array(
-              'mobile' => wp_is_mobile(),
-              'ios' => wp_is_mobile() && preg_match( '/iPad|iPod|iPhone/', $_SERVER['HTTP_USER_AGENT'] ),
+              // wp_is_mobile() may not be available on admin
+              //'mobile' => wp_is_mobile(),
+              //'ios' => wp_is_mobile() && preg_match( '/iPad|iPod|iPhone/', $_SERVER['HTTP_USER_AGENT'] ),
             )
           )
         ));
