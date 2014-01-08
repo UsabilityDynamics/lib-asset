@@ -10,17 +10,22 @@
 ## Usage
 
 ### In Header
+```html
   <script data-main="/js/main" src="//cdn.udx.io/require.js"></script>
+```
 
 ### In Body
 
+```html
   <div data-requires="udx.wp-property.supermap"></div>
   <div data-requires="udx.elastic-filter"></div>
   <div data-requires="crowdfavorite.carrington-build.slider"></div>
   <div data-requires="bootstrap.carousel"></div>
+```
 
 ### Initialize WordPress Handler
 
+```php
   // Enable JavaScript Library Loading.
   $_requires = new \UsabilityDynamics\Requires;
 
@@ -32,6 +37,7 @@
   // Add Libraries.
   $_requires->add( 'ui.wpp.supermap' );
   $_requires->add( 'ui.elastic-filter' );
+```
 
 ## License
 
