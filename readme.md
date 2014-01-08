@@ -1,6 +1,6 @@
 ## Concepts
 
- - Typically only one require.js <script> tag is expected per HTML page, but multiple may be supported in the future.
+ - Typically only one requires.js tag is expected per HTML page, but multiple may be supported in the future.
 
 ## Size
 
