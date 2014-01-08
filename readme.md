@@ -10,8 +10,10 @@
 ## Usage
 
 ### In Header
+
 ```html
-  <script data-main="/js/main" src="//cdn.udx.io/require.js"></script>
+  <script data-main="/js/main" src="//cdn.udx.io/requires.js"></script>
+  <script data-main="/js/data" src="//cdn.udx.io/requires.js"></script>
 ```
 
 ### In Body
