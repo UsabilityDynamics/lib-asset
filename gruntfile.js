@@ -180,6 +180,7 @@ module.exports = function build( grunt ) {
   grunt.loadNpmTasks( 'grunt-shell' );
   grunt.loadNpmTasks( 'grunt-mocha-cli' );
   grunt.loadNpmTasks( 'grunt-mocha-cov' );
+  // grunt.loadNpmTasks( 'grunt-google-cloud-storage' );
 
   // Register NPM Tasks.
   grunt.registerTask( 'default', [ 'markdown', 'less' , 'yuidoc', 'uglify' ] );

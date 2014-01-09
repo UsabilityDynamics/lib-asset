@@ -101,6 +101,7 @@ namespace UsabilityDynamics {
        * @todo Instane / settings should probably be based on scope since only a single requires.js instance can be handled per view.
        *
        * @param array $_atts
+       *
        * @internal param array|mixed $args .path
        */
       function __construct( $_atts = array() ) {
@@ -114,46 +115,45 @@ namespace UsabilityDynamics {
         //self::$instance = &$this;
 
         $args = (object) wp_parse_args( $_atts, array(
-          'name'  => 'main',
-          'path' => '/script/',
-          'packages'  => array(),
-          'shim'  => array(),
-          'paths'  => array(
-            'ajax' => esc_url( admin_url( 'admin-ajax.php' ) ),
-            'home' => esc_url( home_url( '/' ) ),
+          'name'     => 'main',
+          'path'     => '/script/',
+          'packages' => array(),
+          'shim'     => array(),
+          'paths'    => array(
+            'ajax'  => esc_url( admin_url( 'admin-ajax.php' ) ),
+            'home'  => esc_url( home_url( '/' ) ),
             'login' => wp_login_url()
           ),
-          'deps'  => array(),
-          'scope'  => array(),
-          'config' => array(
-            'debug' => defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? true : false,
-            'browser'  => array(
-              // wp_is_mobile() may not be available on admin
+          'deps'     => array(),
+          'scope'    => array(),
+          'config'   => array(
+            'debug'   => defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? true : false,
+            'browser' => array(// wp_is_mobile() may not be available on admin
               //'mobile' => wp_is_mobile(),
               //'ios' => wp_is_mobile() && preg_match( '/iPad|iPod|iPhone/', $_SERVER['HTTP_USER_AGENT'] ),
             )
           )
-        ));
+        ) );
 
         // Force Array.
         $this->scope = (array) $args->scope;
 
         // Set Instance Properties.
-        $this->name = self::create_slug( $args->name  ? $args->name : str_replace( '.js', '', basename( $args->path || '/main.js' ) ), array( 'separator' => '-' ) );
-        $this->path = ( $args->path ? $args->path : '/scripts/' ) . $this->name . '.js' ;
-        $this->deps = (array) $args->deps;
-        $this->shim = (array) $args->shim;
-        $this->scope = (array) $args->scope;
+        $this->name     = self::create_slug( $args->name ? $args->name : str_replace( '.js', '', basename( $args->path || '/main.js' ) ), array( 'separator' => '-' ) );
+        $this->path     = ( $args->path ? $args->path : '/scripts/' ) . $this->name . '.js';
+        $this->deps     = (array) $args->deps;
+        $this->shim     = (array) $args->shim;
+        $this->scope    = (array) $args->scope;
         $this->packages = (array) $args->packages;
-        $this->paths =(object) $args->paths;
-        $this->config =(object) $args->config;
+        $this->paths    = (object) $args->paths;
+        $this->config   = (object) $args->config;
 
         // Create Runtime Settings Instance.
-        $this->_settings = new \UsabilityDynamics\Settings(array(
-          'id' => $this->name,
+        $this->_settings = new \UsabilityDynamics\Settings( array(
+          'id'        => $this->name,
           'namespace' => 'UsabilityDynamics\Requires',
-          'runtime' => true
-        ));
+          'runtime'   => true
+        ) );
 
         if( in_array( 'public', $this->scope ) ) {
           $this->public = true;
@@ -273,7 +273,7 @@ namespace UsabilityDynamics {
           do_action( 'ud:requires:' . $this->name );
 
           // Set Headers.
-          add_filter( 'nocache_headers', function( $headers ) {
+          add_filter( 'nocache_headers', function ( $headers ) {
 
             if( !$headers ) {
               $headers = array();
@@ -292,7 +292,7 @@ namespace UsabilityDynamics {
 
             return $headers;
 
-          });
+          } );
 
           // Standard Headers.
           nocache_headers();
@@ -304,11 +304,11 @@ namespace UsabilityDynamics {
             // 'baseUrl' => home_url( 'scripts/vendor' ),
             // 'urlArgs' => array(),
             'context' => $this->context,
-            'paths' => (object) $this->paths,
+            'paths'   => (object) $this->paths,
             //'packages' => (array) $this->packages,
-            'deps'  => (array) $this->deps,
+            'deps'    => (array) $this->deps,
             'config'  => $this->config
-          ));
+          ) );
 
           //die( '<pre>' . print_r( $_config, true ) . '</pre>' );
 
@@ -317,12 +317,12 @@ namespace UsabilityDynamics {
           );
 
           if( $this->config->debug ) {
-            $_output[] = 'console.log( "ud.requires", "' . $this->name .'");';
-            $_output[] = 'console.log( "ud.requires.config", ' . json_encode( (object) $_config ) . ');';
+            $_output[ ] = 'console.log( "ud.requires", "' . $this->name . '");';
+            $_output[ ] = 'console.log( "ud.requires.config", ' . json_encode( (object) $_config ) . ');';
           }
 
-          $_output[] = 'require.config(' . json_encode( (object) $_config ) . ');';
-          $_output[] = 'require( [], function() { console.log( "app done", arguments ); } );';
+          $_output[ ] = 'require.config(' . json_encode( (object) $_config ) . ');';
+          $_output[ ] = 'require( [], function() { console.log( "app done", arguments ); } );';
 
           do_action( 'ud:requires:output', $_output );
 

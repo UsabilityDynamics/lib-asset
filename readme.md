@@ -1,6 +1,6 @@
 ## Concepts
 
- - Typically only one requires.js tag is expected per HTML page, but multiple may be supported in the future.
+ - Requires will only produce a single script tag per page request, but multiple may be supported in the future.
 
 ## Size
 
@@ -9,36 +9,41 @@
 
 ## Usage
 
+### Initialize WordPress Handler
+
+```php
+// Initialize.
+$_requires = new \UsabilityDynamics\Requires;
+
+// Configure..
+$_requires->set(array(
+  'paths' => '/scripts/app.state.js',
+  'scopes' => 'public',
+  'debug' => true
+)));
+
+// Define Libraries.
+$_requires->add( 'udx.knockout' );
+$_requires->add( 'wpp.ui.supermap' );
+$_requires->add( 'wpp.ui.admin.settings' );
+
+// Render HTML tag.
+$_requires->render_tag();
+```
+
 ### In Header
 
 ```html
-  <script data-main="/js/main" src="//cdn.udx.io/requires.js"></script>
-  <script data-main="/js/data" src="//cdn.udx.io/requires.js"></script>
+<script data-main="/js/main" src="//cdn.udx.io/requires.js"></script>
 ```
 
 ### In Body
 
 ```html
-  <div data-requires="udx.wp-property.supermap"></div>
-  <div data-requires="udx.elastic-filter"></div>
-  <div data-requires="crowdfavorite.carrington-build.slider"></div>
-  <div data-requires="bootstrap.carousel"></div>
-```
-
-### Initialize WordPress Handler
-
-```php
-  // Enable JavaScript Library Loading.
-  $_requires = new \UsabilityDynamics\Requires;
-
-  // Update Settings.
-  $_requires->set( 'paths', '/scripts/app.state.js' );
-  $_requires->set( 'scopes', 'public' );
-  $_requires->set( 'debug', true );
-
-  // Add Libraries.
-  $_requires->add( 'ui.wpp.supermap' );
-  $_requires->add( 'ui.elastic-filter' );
+<div data-requires="udx.wp-property.supermap"></div>
+<div data-requires="udx.elastic-filter"></div>
+<div data-requires="crowdfavorite.carrington-build.slider"></div>
+<div data-requires="bootstrap.carousel"></div>
 ```
 
 ## License

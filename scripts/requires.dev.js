@@ -10,7 +10,12 @@
 var requirejs, require, define;
 
 !function(global) {
-    // // console.log( 'udx', 'loading require.js' );
+    function getAllElementsWithAttribute(a) {
+        for (var b = [], c = document.getElementsByTagName("*"), d = 0; d < c.length; d++) c[d].getAttribute(a) && // Element exists with attribute. Add to array.
+        b.push(c[d]);
+        return b.each = each.bind(this, b), b;
+    }
+    // // context.log( 'udx', 'loading require.js' );
     function isFunction(a) {
         return "[object Function]" === ostring.call(a);
     }
@@ -97,7 +102,6 @@ var requirejs, require, define;
         return e.requireType = a, e.requireModules = d, c && (e.originalError = c), e;
     }
     function newContext(a) {
-        // console.log( 'config.paths', config.paths );
         /**
      * Trims the . and .. from an array of path segments.
      * It will keep a leading path segment if a .. will become
@@ -355,11 +359,34 @@ var requirejs, require, define;
         //cycle breaking code when lots of modules
         //are registered, but not activated.
         z = {}, A = {}, B = [], C = {}, D = {}, E = 1, F = 1;
-        // @works
-        return x.paths.jquery = "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min", 
-        x.paths.async = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min", x.paths["ui.wp.editor.script"] = "//cdn.udx.io/ui.wp.editor.script", 
-        x.paths["ui.wp.editor.style"] = "//cdn.udx.io/ui.wp.editor.style", x.paths["ui.wp.customizer.style"] = "//cdn.udx.io/ui.wp.customizer.style", 
-        x.paths["ui.wp.customizer.script"] = "//cdn.udx.io/ui.wp.customizer.script", v = {
+        // Default Shim.
+        return x.shim = {
+            "udx.ui.jquery.tabs": {
+                deps: [ "jquery.ui" ]
+            },
+            "knockout.mapping": {
+                exports: "knockout.mapping",
+                deps: [ "knockout" ]
+            },
+            "jquery.ui": {
+                exports: "$",
+                deps: [ "jquery", "async" ]
+            },
+            backbone: {
+                deps: [ "underscore", "jquery" ],
+                exports: "Backbone"
+            }
+        }, // Vendor.
+        x.paths.jquery = "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min", x.paths["jquery.ui"] = "//code.jquery.com/ui/1.10.3/jquery-ui", 
+        x.paths.async = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min", x.paths.knockout = "//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1", 
+        x.paths["knockout.mapping"] = "//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min", 
+        // UI Library.
+        x.paths["udx.ui.jquery.tabs"] = "//cdn.udx.io/udx.ui.jquery.tabs", x.paths["udx.ui.wp.editor.script"] = "//cdn.udx.io/ui.wp.editor.script", 
+        x.paths["udx.ui.wp.editor.style"] = "//cdn.udx.io/ui.wp.editor.style", x.paths["udx.ui.wp.customizer.style"] = "//cdn.udx.io/ui.wp.customizer.style", 
+        x.paths["udx.ui.wp.customizer.script"] = "//cdn.udx.io/ui.wp.customizer.script", 
+        // Utility Library.
+        x.paths["udx.utility.facebook.like"] = "//cdn.udx.io/udx.utility.facebook.like", 
+        x.paths["udx.utility.md5"] = "//cdn.udx.io/udx.utility.md5", v = {
             require: function(a) {
                 return a.require ? a.require : a.require = u.makeRequire(a.map);
             },
@@ -608,6 +635,13 @@ var requirejs, require, define;
             nextTick: req.nextTick,
             onError: j,
             /**
+       * Debug Log
+       * @author potanin@UD
+       */
+            log: function() {
+                console.log.apply(console, arguments);
+            },
+            /**
        * Set a configuration for the context.
        * @param {Object} cfg config object to integrate.
        */
@@ -622,7 +656,7 @@ var requirejs, require, define;
                     config: !0,
                     map: !0
                 };
-                a.packages = udx.setDefaultPackages(a.packages), //// console.log( 'cfg.packages', cfg.packages );
+                a.packages = udx.setDefaultPackages(a.packages), //// context.log( 'cfg.packages', cfg.packages );
                 eachProp(a, function(a, b) {
                     d[b] ? (x[b] || (x[b] = {}), mixin(x[b], a, !0, !0)) : x[b] = a;
                 }), //Merge shim
@@ -650,7 +684,7 @@ var requirejs, require, define;
                         main: (a.main || "main").replace(currDirRegExp, "").replace(jsSuffixRegExp, "")
                     };
                 }), //Done with modifications, assing packages back to context config
-                x.pkgs = b), // // console.log( 'config.pkgs', config.pkgs );
+                x.pkgs = b), // // context.log( 'config.pkgs', config.pkgs );
                 //If there are any "waiting to execute" modules in the registry,
                 //update the maps for them, since their info, like URLs to load,
                 //may have changed.
@@ -693,7 +727,7 @@ var requirejs, require, define;
                         }), n();
                     }), f);
                 }
-                // // console.log( 'makeRequire', relMap, options );
+                // // context.log( 'makeRequire', relMap, options );
                 return e = e || {}, mixin(f, {
                     isBrowser: isBrowser,
                     /**
@@ -707,7 +741,7 @@ var requirejs, require, define;
                         //dots from a relative path.
                         -1 !== e && (!g || e > 1) && (d = a.substring(e, a.length), a = a.substring(0, e));
                         var h = u.nameToUrl(c(a, b && b.id, !0), d, !0);
-                        // // console.log( 'toUrl', moduleNamePlusExt, _return );
+                        // // context.log( 'toUrl', moduleNamePlusExt, _return );
                         return h;
                     },
                     defined: function(a) {
@@ -825,7 +859,7 @@ var requirejs, require, define;
        * @private
        */
             execCb: function(a, b, c, d) {
-                //// console.log( 'execCb', name );
+                //// context.log( 'execCb', name );
                 return b.apply(d, c);
             },
             /**
@@ -851,11 +885,11 @@ var requirejs, require, define;
        * Callback for script errors.
        */
             onScriptError: function(a) {
-                // // console.log( 'onScriptError:context.config', context.config );     // config object
-                // // console.log( 'onScriptError:context.defined', context.defined );   // modules (loaded and unloaded)
-                // // console.log( 'onScriptError:context.registry', context.registry ); // looks like a dependency map
-                // // console.log( 'onScriptError:evt', evt ); // event
-                // // console.log( 'onScriptError:this', this );  // DOM element
+                // // context.log( 'onScriptError:context.config', context.config );     // config object
+                // // context.log( 'onScriptError:context.defined', context.defined );   // modules (loaded and unloaded)
+                // // context.log( 'onScriptError:context.registry', context.registry ); // looks like a dependency map
+                // // context.log( 'onScriptError:evt', evt ); // event
+                // // context.log( 'onScriptError:this', this );  // DOM element
                 var b = q(a);
                 return e(b.id) ? void 0 : j(makeError("scripterror", "Script error for: " + b.id, a, [ b.id ]));
             }
@@ -866,41 +900,75 @@ var requirejs, require, define;
             return "interactive" === a.readyState ? interactiveScript = a : void 0;
         }), interactiveScript);
     }
+    var debugBuild = !1;
+    //Set to true if you want to see debug messages in the Console, or false if not.
+    void 0 == window.domReady ? (window.domReady = {}, window.domReady = null) : window.domReady = window.domReady, 
+    void 0 == document.domReady ? (document.domReady = {}, document.domReady = null) : document.domReady = document.domReady;
+    var winonload = window.onload, oldonload = document.onload, isLaunched = 2;
+    document.onload = function() {
+        null !== oldonload && oldonload.call();
+    }, window.onload = function() {
+        null !== winonload && winonload.call();
+    }, document.addEventListener("DOMContentLoaded", function() {
+        var a = window.domReady, b = document.domReady;
+        //Save the document hook
+        if (document.domReady || window.domReady) //Check for the hooks
+        if (isLaunched > 0) {
+            //Check if DomReady hasn't been launched
+            var c = document.createEvent("Event");
+            //Create document DomReady event
+            c.initEvent("onDomReady", !0, !1), //Initialize document DomReady Event
+            document.dispatchEvent(c), //Dispatch the document DomReady event
+            //window.dispatchEvent(evt); //Dispatch the window DomReady event
+            //OLD FOR EMERGENCIES OR BROKEN: if(document.domReady !== null) { //Make sure DomReady isn't 100% null
+            window.domReady && 2 == isLaunched && //Always load window hook first
+            a.call(this, c), isLaunched -= 1, //Lower value
+            document.domReady && 1 == isLaunched && //Always load document hook next
+            b.call(this, c), isLaunched -= 1, //Lower value
+            isLaunched = 0, //Make sure it isn't launched again in case of a continuous loop that may or may not stop looping
+            console && 0 != debugBuild && //Debugging
+            console.log("Event onDomReady has been called by DomContentLoaded.");
+        } else console && 0 != debugBuild && (//Debugging
+        console.log("isLaunched=" + isLaunched), //Has DomReady already been launched?
+        console.log("Dom ready=" + document.domReady), //Current DomReady function hook
+        console.log("Old dom ready=" + b)); else console && 0 != debugBuild && //Debugging
+        console.log("No hooks for domReady.");
+    }, !1);
     var udx = {
         config: {
             loading_class: "udx-module-loading"
         },
         setDefaultPackages: function(a) {
-            // console.log( 'udx', 'setDefaultPackages' );
-            return a = a || [], console.log("packages", a), "function" != typeof a.push, a.push({
+            return console.log("udx", "setDefaultPackages"), a = a || [], "function" != typeof a.push, 
+            a.push({
                 location: "http://cdn.udx.io/ace",
                 main: "ace",
                 name: "ace"
             }), a;
         },
         dynamic_loading: function() {
-            // // console.log( 'udx', 'dynamic_loading' );
+            function a() {
+                console.log("Event onDomReady has been fired."), console.log("typeof context.require", typeof b.require), 
+                getAllElementsWithAttribute("data-requires").each(function(a) {
+                    console.log("element", a);
+                    var c = a.getAttribute("data-requires");
+                    b.require([ c ], function(c) {
+                        // context.log( 'moduleLoaded', _name, typeof callback );
+                        "function" == typeof c && c.call(a, b);
+                    }, function(a) {
+                        b.log(c, "not found.", a);
+                    });
+                });
+            }
+            //context.log( 'udx', 'dynamic_loading' );
             // var _basic_array = [];
             // for( var key in deps ) { if (deps.hasOwnProperty(key)){ _basic_array.push(deps[key]); } }
             //arguments[0] = _basic_array;
-            //console.log( 'deps', deps );
-            //console.log( '_basic_array', _basic_array );
-            var a = this;
-            jQuery(document).on("ready", function() {
-                // console.log( 'udx', 'document:ready' );
-                requirejs.__done__thing = !0, // console.log( 'udx', 'DOM Ready... ' );
-                // Load Required Assets.
-                // @note This is essentially beta, if works well, will be rolled into require.js library.
-                jQuery("[data-require]").each(function(b, c) {
-                    var d = jQuery(c).attr("data-require");
-                    a.require([ d ], function(a) {
-                        // console.log( 'moduleLoaded', _name );
-                        "function" == typeof a && a.call({
-                            element: c
-                        });
-                    });
-                });
-            });
+            //context.log( 'deps', deps );
+            //context.log( '_basic_array', _basic_array );
+            var b = this;
+            // Trigger only once and when ready.
+            document.domReady = a;
         }
     }, req, s, head, baseElement, dataMain, src, interactiveScript, currentlyAddingScript, mainScript, subPath, version = "2.1.9+", commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/gm, cjsRequireRegExp = /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g, jsSuffixRegExp = /\.js$/, currDirRegExp = /^\.\//, op = Object.prototype, ostring = op.toString, hasOwn = op.hasOwnProperty, ap = Array.prototype, apsp = ap.splice, isBrowser = !("undefined" == typeof window || "undefined" == typeof navigator || !window.document), isWebWorker = !isBrowser && "undefined" != typeof importScripts, //PS3 indicates loaded and complete, but need to wait for complete
     //specifically. Sequence is 'loading', 'loaded', execution,
@@ -933,7 +1001,7 @@ var requirejs, require, define;
         req = requirejs = function(a, b, c, d) {
             //Find the right context, use default
             var e, f, g = defContextName;
-            //// console.log( 'sdafsafasdf', context.config );
+            //// context.log( 'sdafsafasdf', context.config );
             // Determine if have config object in the call.
             return isArray(a) || "string" == typeof a || (// deps is a config object
             f = a, isArray(b) ? (// Adjust args if there are dependencies
