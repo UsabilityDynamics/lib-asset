@@ -381,7 +381,7 @@ var requirejs, require, define;
         x.paths.async = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min", x.paths.knockout = "//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1", 
         x.paths["knockout.mapping"] = "//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min", 
         // UI Library.
-        x.paths["udx.ui.jquery.tabs"] = "//cdn.udx.io/udx.ui.jquery.tabs", x.paths["udx.ui.wp.editor.script"] = "//cdn.udx.io/ui.wp.editor.script", 
+        x.paths["udx.ui.jquery-tabs"] = "//cdn.udx.io/ui.jquery-tabs", x.paths["udx.ui.wp.editor.script"] = "//cdn.udx.io/ui.wp.editor.script", 
         x.paths["udx.ui.wp.editor.style"] = "//cdn.udx.io/ui.wp.editor.style", x.paths["udx.ui.wp.customizer.style"] = "//cdn.udx.io/ui.wp.customizer.style", 
         x.paths["udx.ui.wp.customizer.script"] = "//cdn.udx.io/ui.wp.customizer.script", 
         // Utility Library.

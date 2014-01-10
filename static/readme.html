@@ -112,17 +112,39 @@
     </style>
   </head>
   <body>  
-    <h2 id="usage">Usage</h2>
-<h3 id="in-header">In Header</h3>
-  <script data-main="/scripts/app.state.js" src="//cdn.udx.io/require.js"></script>
-
-<h3 id="in-body">In Body</h3>
+    <h2 id="concepts">Concepts</h2>
+<ul>
+<li>Requires will only produce a single script tag per page request, but multiple may be supported in the future.</li>
+</ul>
+<h2 id="size">Size</h2>
+<p>  17.7 KB minified
+  69.8 KB unminified.</p>
+<h2 id="usage">Usage</h2>
 <h3 id="initialize-wordpress-handler">Initialize WordPress Handler</h3>
-<p>  // Enable JavaScript Library Loading.
-  new \UsabilityDynamics\Requires(array(
-    &#39;path&#39; =&gt; &#39;/scripts/app.state.js&#39;,
-    &#39;debug&#39; =&gt; true
-  ));</p>
+<pre><code class="lang-php">// Initialize.
+$_requires = new \UsabilityDynamics\Requires;
+
+// Configure..
+$_requires-&gt;set(array(
+  &#39;paths&#39; =&gt; &#39;/scripts/app.state.js&#39;,
+  &#39;scopes&#39; =&gt; &#39;public&#39;,
+  &#39;debug&#39; =&gt; true
+)));
+
+// Define Libraries.
+$_requires-&gt;add( &#39;udx.knockout&#39; );
+$_requires-&gt;add( &#39;wpp.ui.supermap&#39; );
+$_requires-&gt;add( &#39;wpp.ui.admin.settings&#39; );
+
+// Render HTML tag.
+$_requires-&gt;render_tag();</code></pre>
+<h3 id="in-header">In Header</h3>
+<pre><code class="lang-html">&lt;script data-main=&quot;/js/main&quot; src=&quot;//cdn.udx.io/requires.js&quot;&gt;&lt;/script&gt;</code></pre>
+<h3 id="in-body">In Body</h3>
+<pre><code class="lang-html">&lt;div data-requires=&quot;udx.wp-property.supermap&quot;&gt;&lt;/div&gt;
+&lt;div data-requires=&quot;udx.elastic-filter&quot;&gt;&lt;/div&gt;
+&lt;div data-requires=&quot;crowdfavorite.carrington-build.slider&quot;&gt;&lt;/div&gt;
+&lt;div data-requires=&quot;bootstrap.carousel&quot;&gt;&lt;/div&gt;</code></pre>
 <h2 id="license">License</h2>
 <p>(The MIT License)</p>
 <p>Copyright (c) 2013 Usability Dynamics, Inc. &lt;info@usabilitydynamics.com&gt;</p>

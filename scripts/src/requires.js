@@ -387,7 +387,7 @@ var requirejs, require, define;
     config.paths[ 'knockout.mapping' ]    = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
 
     // UI Library.
-    config.paths[ 'udx.ui.jquery.tabs' ]            = "//cdn.udx.io/udx.ui.jquery.tabs";
+    config.paths[ 'udx.ui.jquery-tabs' ]            = "//cdn.udx.io/ui.jquery-tabs";
     config.paths[ 'udx.ui.wp.editor.script' ]       = "//cdn.udx.io/ui.wp.editor.script";
     config.paths[ 'udx.ui.wp.editor.style' ]        = "//cdn.udx.io/ui.wp.editor.style";
     config.paths[ 'udx.ui.wp.customizer.style' ]    = "//cdn.udx.io/ui.wp.customizer.style";
