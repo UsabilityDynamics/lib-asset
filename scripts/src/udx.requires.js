@@ -387,15 +387,21 @@ var requirejs, require, define;
     config.paths[ 'knockout.mapping' ]    = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
 
     // UI Library.
-    config.paths[ 'udx.ui.jquery-tabs' ]            = "//cdn.udx.io/ui.jquery-tabs";
-    config.paths[ 'udx.ui.wp.editor.script' ]       = "//cdn.udx.io/ui.wp.editor.script";
-    config.paths[ 'udx.ui.wp.editor.style' ]        = "//cdn.udx.io/ui.wp.editor.style";
-    config.paths[ 'udx.ui.wp.customizer.style' ]    = "//cdn.udx.io/ui.wp.customizer.style";
-    config.paths[ 'udx.ui.wp.customizer.script' ]   = "//cdn.udx.io/ui.wp.customizer.script";
+    config.paths[ 'udx.ui.jquery-tabs' ]            = "//cdn.udx.io/udx.ui.jquery-tabs";
+    config.paths[ 'udx.ui.wp.editor.script' ]       = "//cdn.udx.io/udx.ui.wp.editor.script";
+    config.paths[ 'udx.ui.wp.editor.style' ]        = "//cdn.udx.io/udx.ui.wp.editor.style";
+    config.paths[ 'udx.ui.wp.customizer.style' ]    = "//cdn.udx.io/udx.ui.wp.customizer.style";
+    config.paths[ 'udx.ui.wp.customizer.script' ]   = "//cdn.udx.io/udx.ui.wp.customizer.script";
 
-    // Utility Library.
     config.paths[ 'udx.utility.facebook.like' ]     = "//cdn.udx.io/udx.utility.facebook.like";
     config.paths[ 'udx.utility.md5' ]               = "//cdn.udx.io/udx.utility.md5";
+
+    config.paths[ 'udx.settings' ]                  = "//cdn.udx.io/udx.settings";
+
+    config.paths[ 'wpp.admin.global' ]              = "//cdn.udx.io/wpp.admin.global";
+    config.paths[ 'wpp.admin.overview' ]            = "//cdn.udx.io/wpp.admin.overview";
+    config.paths[ 'wpp.admin.settings' ]            = "//cdn.udx.io/wpp.admin.settings";
+    config.paths[ 'wpp.global' ]                    = "//cdn.udx.io/wpp.global";
 
     /**
      * Trims the . and .. from an array of path segments.

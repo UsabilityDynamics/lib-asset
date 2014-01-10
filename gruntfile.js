@@ -69,31 +69,19 @@ module.exports = function build( grunt ) {
 
     // Uglify Scripts.
     uglify: {
-      development: {
-        options: {
-          preserveComments: true,
-          beautify: true,
-          wrap: false
-        },
-        files: {
-          'scripts/requires.dev.js': [ 'scripts/src/requires.js' ],
-          'scripts/asset.dev.js': [ 'scripts/src/asset.js' ]
-        }
-      },
       production: {
         options: {
-          banner: [
-            '/**',
-            ' requires.js',
-            '*/'
-          ].join( "\n *" ),
           preserveComments: false,
           wrap: false
         },
-        files: {
-          'scripts/requires.js': [ 'scripts/src/requires.js' ],
-          'scripts/asset.js': [ 'scripts/src/asset.js' ]
-        }
+        files: [
+          {
+            expand: true,
+            cwd: 'scripts/src',
+            src: [ '*.js' ],
+            dest: 'scripts'
+          }
+        ]
       }
     },
 
