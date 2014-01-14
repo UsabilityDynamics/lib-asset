@@ -45,8 +45,6 @@ namespace UsabilityDynamics {
        */
       private $_settings = array();
 
-      public $_instances = array();
-
       /**
        * Constructor.
        *
@@ -63,9 +61,6 @@ namespace UsabilityDynamics {
        * @internal param array|mixed $args .path
        */
       function __construct( $args = array() ) {
-
-        // Save Instance.
-        //self::$instance = &$this;
 
         if( did_action( 'template_redirect' ) ) {
           _doing_it_wrong( __FUNCTION__, sprintf( __( 'Requires called too late.' ) ) );
@@ -126,7 +121,7 @@ namespace UsabilityDynamics {
         add_action( 'wp_ajax_nopriv_' . $this->get( 'id' ), array( &$this, '_serve_model' ) );
 
         // Handle Rewrites.
-        // @todo Add rewrite manager.
+        // @todo Add rewrite handler.
 
         // @chainable.
         return $this;
@@ -160,8 +155,7 @@ namespace UsabilityDynamics {
        * @action login_enqueue_scripts - Login page header scripts.
        * @action customize_controls_print_scripts - Customizer Interface scripts.
        * @action customize_controls_print_footer_scripts - Customizer Interface footer scripts.
-       * @action admin_print_scripts - General administrative scripts.
-       * @action wp_head - Frontend header scripts.
+       * @action admin_print_footer_scripts - General administrative scripts.
        * @action wp_footer - Frontend header scripts.
        */
       public function render_tag() {
@@ -209,15 +203,15 @@ namespace UsabilityDynamics {
        */
       function _serve_model() {
 
-        if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === $this->get( '_path' ) ) {}
+        // if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === $this->get( '_path' ) ) {}
 
-        $_action = $_GET[ 'action' ];
+        // $_action = $_GET[ 'action' ];
 
         // Generate Action Handler.
         do_action( 'ud:requires', $this );
 
         // Instance Action Handler.
-        do_action( 'ud:requires:' . $this->get( 'id' ) );
+        do_action( 'ud:requires:' . $this->get( 'id' ), $this );
 
         // Set Headers.
         add_filter( 'nocache_headers', function ( $headers = array() ) {
@@ -251,12 +245,18 @@ namespace UsabilityDynamics {
           'deps'    => $this->get( 'deps' )
         ));
 
-        self::send( array_filter( $data ) );
+        self::send_json( $this->get( 'id' ), array_filter( $data ) );
 
       }
 
-      public static function send( $data ) {
-        die( 'define(' . json_encode( $data ) . ');' );
+      /**
+       * Output JSON
+       *
+       * @param string $id
+       * @param array  $data
+       */
+      public static function send_json( $id = '', $data = array() ) {
+        die( 'define("' . $id . '",' . json_encode( $data ) . ');' );
       }
 
       /**
@@ -285,10 +285,6 @@ namespace UsabilityDynamics {
        */
       public function set( $key, $value = null ) {
         return $this->_settings ? $this->_settings->set( $key, $value ) : null;
-      }
-
-      public static function get_instance() {
-        return self::$instances;
       }
 
     }

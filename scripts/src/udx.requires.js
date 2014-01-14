@@ -144,8 +144,7 @@ var requirejs, require, define;
       var context = this;
 
       function findTriggers() {
-        //context.log( 'findTriggers' );
-        //context.log( 'typeof context.require', typeof context.require );
+        context.log( 'findTriggers' );
 
         getAllElementsWithAttribute( 'data-requires' ).each( function( element ) {
           context.log( 'element[data-requires]', element );
@@ -170,7 +169,7 @@ var requirejs, require, define;
 
           }, function notFound( error ) {
             context.log( element.getAttribute( 'data-requires' ), 'not found.', error );
-          } );
+          });
 
         });
 
@@ -220,19 +219,19 @@ var requirejs, require, define;
       }
       return destination;
     },
-    // Handle our Special Model-Module.
-    // When called the module extends contextual paths, args, config and deps.
-    // Only ran once.
-    //
     /**
+     * Handle our Special Model-Module.
+     *
+     * When called the module extends contextual paths, args, config and deps.
      *
      * @param context
      * @param data
      * @returns {data|*|data|data|data|data}
      */
-    contextModel: function contextModel( context, data ) {
-      console.log( 'model detected, returning only the data, extending settings.' );
+    contextModel: function contextModel( context, id, data ) {
+      context.log( 'contextModel', id, data );
 
+      // Extend Properties into Conifg.
       udx.deepExtend( context.config, {
         "paths": data.paths || {},
         "shim": data.shim|| {},
@@ -240,9 +239,10 @@ var requirejs, require, define;
         "config": data.config || {}
       });
 
+      // Add Dependencies.
       each( data.deps || [], function( dep ) {
         context.config.deps.push( dep );
-      })
+      });
 
       // Overwrite value so this extension does not run again
       return data.data || {};
@@ -478,10 +478,11 @@ var requirejs, require, define;
 
     config.paths[ 'udx.settings' ] = "//cdn.udx.io/udx.settings";
 
-    config.paths[ 'wpp.admin.global' ] = "//cdn.udx.io/wpp.admin.global";
+    config.paths[ 'wpp' ] = "//cdn.udx.io/wpp";
+    config.paths[ 'wpp.admin' ] = "//cdn.udx.io/wpp.admin";
     config.paths[ 'wpp.admin.overview' ] = "//cdn.udx.io/wpp.admin.overview";
     config.paths[ 'wpp.admin.settings' ] = "//cdn.udx.io/wpp.admin.settings";
-    config.paths[ 'wpp.global' ] = "//cdn.udx.io/wpp.global";
+    config.paths[ 'wpp.admin.tools' ] = "//cdn.udx.io/wpp.admin.tools";
 
     /**
      * Trims the . and .. from an array of path segments.
@@ -1644,7 +1645,7 @@ var requirejs, require, define;
       },
 
       makeRequire: function( relMap, options ) {
-        context.log( 'makeRequire', relMap );
+        context.log( 'makeRequire' );
 
         options = options || {};
 
@@ -1658,7 +1659,7 @@ var requirejs, require, define;
           }
 
           if( typeof deps === 'string' ) {
-            context.log( 'blah0', deps );
+            context.log( 'localRequire', deps );
 
             if( isFunction( callback ) ) {
               //Invalid call
@@ -1688,9 +1689,8 @@ var requirejs, require, define;
             }
 
             if( hasProp( defined[id], 'data' ) && hasProp( defined[ id ], 'type' ) ) {
-              return defined[id] = udx.contextModel( context, defined[id] );
+              return udx.contextModel( context, id, defined[id] );
             }
-
 
             return defined[id];
 
@@ -2159,11 +2159,11 @@ var requirejs, require, define;
     if( url.indexOf( '.json' ) > 1 ) {
 
       return udx.fetch_json_file( url, function( error, data ) {
-        context.log( 'have json!' )
+        context.log( 'have json!' );
 
         try {
 
-          _model = udx.parse_json_string( data );
+          var _model = udx.parse_json_string( data );
 
           context.log( 'json parsed', _model );
 
@@ -2356,12 +2356,12 @@ var requirejs, require, define;
 
         //context.log( 'cfg', cfg );
 
-        script.setAttribute( 'data-loading', 'true' );
+        // script.setAttribute( 'data-loading', 'true' );
 
         return true;
       }
 
-    } );
+    });
 
     /**
      * Add Check to ensure that the script we found references the
@@ -2369,17 +2369,24 @@ var requirejs, require, define;
     req.nextTick( function otherScriptTags() {
 
       getAllElementsWithAttribute( 'data-main', 'script' ).each( function( element ) {
+        // console.log( 'data-main script', element );
 
-        if( !element.getAttribute( 'data-loading' ) && _last_script && element.src == _last_script.src ) {
+        if( !element.getAttribute( 'data-loading' ) && element.src == _last_script.src ) {
 
+          //if( !element.getAttribute( 'data-loading' ) && _last_script && element.src == _last_script.src ) {
           //cfg.paths[ 'asdfasf' ] = 'asdsadf';
 
-          var dataName = element.getAttribute( 'data-name' );
-          var dataMain = element.getAttribute( 'data-main' );
+          var dataId    = element.getAttribute( 'data-id' );
+          var dataName  = element.getAttribute( 'data-name' );
+          var dataMain  = element.getAttribute( 'data-main' );
 
-          element.setAttribute( 'data-loading', 'true' );
+          element.setAttribute( 'data-status', 'loading' );
 
-          getOwn( contexts, '_' ).config.deps.push( dataName );
+          // Register Path.
+          getOwn( contexts, '_' ).config.paths[ element.getAttribute( 'data-id' ) ] = element.getAttribute( 'data-main' );
+
+          // Include as Dependency.
+          getOwn( contexts, '_' ).config.deps.push( element.getAttribute( 'data-id' ) );
 
         }
 
