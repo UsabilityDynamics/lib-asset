@@ -132,14 +132,7 @@ var requirejs, require, define;
       return packages;
 
     },
-    dynamic_loading: function dynamic_loading( deps, callback, errback ) {
-      //context.log( 'udx', 'dynamic_loading' );
-
-      // var _basic_array = [];
-      // for( var key in deps ) { if (deps.hasOwnProperty(key)){ _basic_array.push(deps[key]); } }
-      //arguments[0] = _basic_array;
-      //context.log( 'deps', deps );
-      //context.log( '_basic_array', _basic_array );
+    dynamic_loading: function dynamicLoader( deps, callback, errback ) {
 
       var context = this;
 
@@ -156,6 +149,8 @@ var requirejs, require, define;
 
           element.setAttribute( 'data-status', 'loading' );
 
+          // console.dir( context.config.paths );
+
           context.require( [ element.getAttribute( 'data-requires' ) ], function moduleLoaded( callback ) {
             // context.log( 'moduleLoaded', _name, typeof callback );
 
@@ -169,14 +164,19 @@ var requirejs, require, define;
 
           }, function notFound( error ) {
             context.log( element.getAttribute( 'data-requires' ), 'not found.', error );
-          });
+          } );
 
         });
 
       }
 
       // Trigger only once and when ready.
-      document.domReady = findTriggers;
+      document.domReady = function() {
+
+        // @todo Fix ghetto timeout - figure out how to make local models be loaded before libs...
+        window.setTimeout( function() { findTriggers(); }, 2000 )
+
+      };
 
     },
     fetch_json_file: function( url, _callback ) {
@@ -229,20 +229,20 @@ var requirejs, require, define;
      * @returns {data|*|data|data|data|data}
      */
     contextModel: function contextModel( context, id, data ) {
-      context.log( 'contextModel', id, data );
+      // this.log( 'contextModel', id, data );
 
       // Extend Properties into Conifg.
       udx.deepExtend( context.config, {
         "paths": data.paths || {},
-        "shim": data.shim|| {},
+        "shim": data.shim || {},
         "urlArgs": data.urlArgs || {},
         "config": data.config || {}
-      });
+      } );
 
       // Add Dependencies.
       each( data.deps || [], function( dep ) {
         context.config.deps.push( dep );
-      });
+      } );
 
       // Overwrite value so this extension does not run again
       return data.data || {};
@@ -435,9 +435,6 @@ var requirejs, require, define;
 
     // Default Shim.
     config.shim = {
-      "udx.ui.jquery.tabs": {
-        deps: [ 'jquery.ui' ]
-      },
       "knockout": {
         // exports: "knockout"
       },
@@ -473,16 +470,12 @@ var requirejs, require, define;
     config.paths[ 'udx.ui.wp.customizer.style' ] = "//cdn.udx.io/udx.ui.wp.customizer.style";
     config.paths[ 'udx.ui.wp.customizer.script' ] = "//cdn.udx.io/udx.ui.wp.customizer.script";
 
+    // Utility Library.
     config.paths[ 'udx.utility.facebook.like' ] = "//cdn.udx.io/udx.utility.facebook.like";
     config.paths[ 'udx.utility.md5' ] = "//cdn.udx.io/udx.utility.md5";
 
+    // Settings Library.
     config.paths[ 'udx.settings' ] = "//cdn.udx.io/udx.settings";
-
-    config.paths[ 'wpp' ] = "//cdn.udx.io/wpp";
-    config.paths[ 'wpp.admin' ] = "//cdn.udx.io/wpp.admin";
-    config.paths[ 'wpp.admin.overview' ] = "//cdn.udx.io/wpp.admin.overview";
-    config.paths[ 'wpp.admin.settings' ] = "//cdn.udx.io/wpp.admin.settings";
-    config.paths[ 'wpp.admin.tools' ] = "//cdn.udx.io/wpp.admin.tools";
 
     /**
      * Trims the . and .. from an array of path segments.
@@ -1330,9 +1323,12 @@ var requirejs, require, define;
             //Support anonymous modules.
             context.completeLoad( moduleName );
 
+            //console.log( 'completeLoad')
+
             //Bind the value of that module to the value for this
             //resource ID.
             localRequire( [moduleName], load );
+
           } );
 
           //Use parentName here since the plugin's name is not reliable,
@@ -1520,7 +1516,6 @@ var requirejs, require, define;
        */
       log: function debugLog() {
 
-
         if( config.debug ) {
           console[log].apply( console, arguments );
         }
@@ -1645,12 +1640,12 @@ var requirejs, require, define;
       },
 
       makeRequire: function( relMap, options ) {
-        context.log( 'makeRequire' );
+        // console.log( 'makeRequire', defined );
 
         options = options || {};
 
         function localRequire( deps, callback, errback ) {
-          context.log( 'localRequire', deps, typeof callback );
+          // console.log( 'localRequire', this );
 
           var id, map, requireMod;
 
@@ -1722,9 +1717,7 @@ var requirejs, require, define;
 
           return localRequire;
 
-
         }
-
 
         mixin( localRequire, {
           isBrowser: isBrowser,
@@ -2303,13 +2296,12 @@ var requirejs, require, define;
         head = script.parentNode;
       }
 
-      udx.dataBase = script.getAttribute( 'data-base' );
+      udx.dataBaseURL = script.getAttribute( 'data-base-url' );
       udx.dataModel = script.getAttribute( 'data-model' );
 
       // Set baseUrl from data-base tag on the script
-      if( !cfg.baseUrl && udx.dataBase ) {
-        //context.log( 'dataModel', );
-        cfg.baseUrl = udx.dataBase;
+      if( udx.dataBaseURL ) {
+        cfg.baseUrl = udx.dataBaseURL;
       }
 
       // If dataModel is defined in script tag, as
@@ -2361,7 +2353,7 @@ var requirejs, require, define;
         return true;
       }
 
-    });
+    } );
 
     /**
      * Add Check to ensure that the script we found references the
@@ -2376,9 +2368,9 @@ var requirejs, require, define;
           //if( !element.getAttribute( 'data-loading' ) && _last_script && element.src == _last_script.src ) {
           //cfg.paths[ 'asdfasf' ] = 'asdsadf';
 
-          var dataId    = element.getAttribute( 'data-id' );
-          var dataName  = element.getAttribute( 'data-name' );
-          var dataMain  = element.getAttribute( 'data-main' );
+          var dataId = element.getAttribute( 'data-id' );
+          var dataName = element.getAttribute( 'data-name' );
+          var dataMain = element.getAttribute( 'data-main' );
 
           element.setAttribute( 'data-status', 'loading' );
 
@@ -2390,9 +2382,9 @@ var requirejs, require, define;
 
         }
 
-      });
+      } );
 
-    });
+    } );
 
   }
 

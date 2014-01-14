@@ -4,13 +4,13 @@
  *
  * ### Actions
  *
- * - ud:requires
- * - ud:requires:{name}
+ * - udx:requires
+ * - udx:requires:{name}
  *
  * ### Filters
  *
- * - ud:requires:headers
- * - ud:requires:config
+ * - udx:requires:headers
+ * - udx:requires:config
  *
  * @author potanin@UD
  * @version 0.1.0
@@ -71,8 +71,9 @@ namespace UsabilityDynamics {
           'type'      => 'model',
           'context'   => '_',
           'path'      => admin_url( 'admin-ajax.php?action=' . $args[ 'id' ] ),
-          'reqrite'   => null,
+          'rewrite'   => null,
 
+          'base'      => null,
           'data'      => array(),
           'config'    => array(),
 
@@ -82,7 +83,7 @@ namespace UsabilityDynamics {
           'paths' => array(
             'api'   => esc_url( admin_url( 'admin-ajax.php' ) ),
             'home'  => esc_url( home_url( '/' ) ),
-            'login' => wp_login_url()
+            'login' => esc_url( wp_login_url() )
           ),
 
           // Extra Module Request Arguments.
@@ -162,34 +163,51 @@ namespace UsabilityDynamics {
 
         $scope = is_admin() ? 'private' : 'public';
 
-        echo '<script data-scope="' . $scope . '" data-id="' . $this->get( 'id' ) . '" data-main="' . $this->get( '_path' ) . '" src="' . self::$server . '"></script>' . "\n";
-
-        return;
+        $_args = apply_filters( 'udx:requires:config', array_filter(array(
+          'src' => self::$server,
+          'data-id' => $this->get( 'id' ),
+          'data-main' => $this->get( '_path' ),
+          'data-scope' => $scope,
+          'data-base-url' => esc_url( $this->get( 'base' ) )
+        )));
 
         // Standard Admin.
+        if( current_filter() == 'admin_print_scripts' && $this->backend ) {
+          $_args[ 'scope' ] = 'private';
+        }
+
         if( current_filter() == 'admin_print_footer_scripts' && $this->backend ) {
-          echo '<script data-scope="admin" data-id="' . $this->id . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
         }
 
         // Admin Customizer Controls.
         if( current_filter() == 'customize_controls_print_scripts' && $this->customizer ) {
-          echo '<script data-scope="customizer" data-id="' . $this->id . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+          $_args[ 'scope' ] = 'customizer';
         }
 
         // Login Scripts.
         if( current_filter() == 'login_enqueue_scripts' && $this->login ) {
-          echo '<script data-scope="login" data-id="' . $this->id . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+          $_args[ 'scope' ] = 'login';
         }
 
         // Public Frontend.
         if( current_filter() == 'wp_footer' && $this->public ) {
-          echo '<script data-scope="public" data-id="' . $this->id . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+          $_args[ 'scope' ] = 'public';
         }
 
         // Frontned Customization Preview.
         if( current_filter() == 'customize_preview_init' && $this->preview ) {
-          echo '<script data-scope="preview" data-id="' . $this->id . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+          $_args[ 'scope' ] = 'preview';
         }
+
+
+        $_tag = '';
+
+        foreach( (array) $_args as $key => $value ) {
+          $_tag .= '' . $key . '=' . '"' . $value . '" ';
+        }
+
+
+        echo '<script ' . $_tag . "></script>\n";
 
       }
 
@@ -208,10 +226,10 @@ namespace UsabilityDynamics {
         // $_action = $_GET[ 'action' ];
 
         // Generate Action Handler.
-        do_action( 'ud:requires', $this );
+        do_action( 'udx:requires', $this );
 
         // Instance Action Handler.
-        do_action( 'ud:requires:' . $this->get( 'id' ), $this );
+        do_action( 'udx:requires:' . $this->get( 'id' ), $this );
 
         // Set Headers.
         add_filter( 'nocache_headers', function ( $headers = array() ) {
@@ -222,7 +240,7 @@ namespace UsabilityDynamics {
             'Vary'            => 'Accept-Encoding'
           ));
 
-          // $headers = apply_filters( 'ud:requires:headers', $headers );
+          $headers = apply_filters( 'udx:requires:headers', $headers );
 
           return $this->get( '_headers' );
 
@@ -234,18 +252,21 @@ namespace UsabilityDynamics {
         // WordPress will try to make it 404.
         http_response_code( $this->get( 'code', 200 ) );
 
-        $data = apply_filters( 'ud:requires:config', array(
+        $data = apply_filters( 'udx:requires:data', array(
           'id'      => $this->get( 'id' ),
           'type'    => $this->get( 'type' ),
           'context' => $this->get( 'context' ),
-          'urlArgs' => $this->get( 'args' ),
-          'paths'   => $this->get( 'paths' ),
-          'config'  => $this->get( 'config' ),
-          'data'    => $this->get( 'data' ),
-          'deps'    => $this->get( 'deps' )
+          'data'    => $this->get( 'data' )
         ));
 
-        self::send_json( $this->get( 'id' ), array_filter( $data ) );
+        $config = apply_filters( 'udx:requires:config', array(
+          'paths'   => $this->get( 'paths' ),
+          'deps'    => $this->get( 'deps' ),
+          'urlArgs' => $this->get( 'args' ),
+          'config'  => $this->get( 'config' )
+        ));
+
+        self::send_script( $this->get( 'id' ), array_filter( $data ), array_filter( $config ) );
 
       }
 
@@ -254,9 +275,10 @@ namespace UsabilityDynamics {
        *
        * @param string $id
        * @param array  $data
+       * @param array  $config
        */
-      public static function send_json( $id = '', $data = array() ) {
-        die( 'define("' . $id . '",' . json_encode( $data ) . ');' );
+      public static function send_script( $id = '', $data = array(), $config ) {
+        die( 'require.config(' . json_encode( $config ) . ');define("' . $id . '",' . json_encode( $data ) . ');' );
       }
 
       /**
