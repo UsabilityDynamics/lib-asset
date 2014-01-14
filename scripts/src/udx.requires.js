@@ -113,11 +113,9 @@ var requirejs, require, define;
       loading_class: 'udx-module-loading'
     },
     setDefaultPackages: function( packages ) {
-      // context.log( 'udx', 'setDefaultPackages' );
+      //context.log( 'udx', 'setDefaultPackages' );
 
       packages = packages || [];
-
-      // context.log( 'packages', packages );
 
       if( 'function' !== typeof packages.push ) {
         //return packages;
@@ -152,7 +150,7 @@ var requirejs, require, define;
           // console.dir( context.config.paths );
 
           context.require( [ element.getAttribute( 'data-requires' ) ], function moduleLoaded( callback ) {
-            // context.log( 'moduleLoaded', _name, typeof callback );
+            context.log( 'moduleLoaded', typeof callback );
 
             element.setAttribute( 'data-status', 'ready' );
 
@@ -179,6 +177,11 @@ var requirejs, require, define;
       };
 
     },
+    /**
+     * 
+     * @param url
+     * @param _callback
+     */
     fetch_json_file: function( url, _callback ) {
 
       if( window.XMLHttpRequest ) {
@@ -203,6 +206,11 @@ var requirejs, require, define;
       };
 
     },
+    /**
+     *
+     * @param string
+     * @returns {*}
+     */
     parse_json_string: function( string ) {
 
       return JSON.parse( string );
@@ -261,7 +269,7 @@ var requirejs, require, define;
 
     }, globalDefQueue = [], useInteractive = false;
 
-  // // context.log( 'udx', 'loading require.js' );
+  // context.log( 'udx', 'loading require.js' );
 
   function isFunction( it ) {
     return ostring.call( it ) === '[object Function]';
@@ -302,7 +310,11 @@ var requirejs, require, define;
   }
 
   function hasProp( obj, prop ) {
-    return hasOwn.call( obj, prop );
+
+    if( obj && hasOwn && 'function' === typeof hasOwn.call ) {
+      return hasOwn.call( obj, prop );
+    }
+
   }
 
   function getOwn( obj, prop ) {
@@ -451,7 +463,7 @@ var requirejs, require, define;
         deps: [ 'jquery', 'async' ]
       },
       "datatables": {
-        exports: 'datatables',
+        //exports: 'jQuery.dataTable',
         deps: [ 'jquery' ]
       },
       "backbone": {
@@ -466,7 +478,7 @@ var requirejs, require, define;
     config.paths[ 'async' ] = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
     config.paths[ 'knockout' ] = '//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1';
     config.paths[ 'knockout.mapping' ] = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
-    config.paths[ 'datatables' ] = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min    ';
+    config.paths[ 'datatables' ] = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
 
     // UI Library.
     config.paths[ 'udx.ui.jquery.tabs' ] = "//cdn.udx.io/udx.ui.jquery.tabs";
@@ -841,7 +853,7 @@ var requirejs, require, define;
              * @returns {*}
              */
             log: function moduleLog() {
-              console.log.call( console, this.id, arguments );
+              console.info.call( console, this.id, arguments );
               return arguments[0];
             },
             /**
@@ -1328,7 +1340,7 @@ var requirejs, require, define;
             //Support anonymous modules.
             context.completeLoad( moduleName );
 
-            //console.log( 'completeLoad')
+            //context.log( 'completeLoad')
 
             //Bind the value of that module to the value for this
             //resource ID.
@@ -1535,7 +1547,7 @@ var requirejs, require, define;
        * @param {Object} cfg config object to integrate.
        */
       configure: function( cfg ) {
-        // // context.log( 'configure', cfg );
+        // context.log( 'configure', cfg );
 
         //Make sure the baseUrl ends in a slash.
         if( cfg.baseUrl ) {
@@ -1554,7 +1566,7 @@ var requirejs, require, define;
 
         cfg.packages = udx.setDefaultPackages( cfg.packages );
 
-        //// context.log( 'cfg.packages', cfg.packages );
+        //context.log( 'cfg.packages', cfg.packages );
 
         eachProp( cfg, function( value, prop ) {
           if( objs[prop] ) {
@@ -1610,7 +1622,7 @@ var requirejs, require, define;
           config.pkgs = pkgs;
         }
 
-        // // context.log( 'config.pkgs', config.pkgs );
+        // context.log( 'config.pkgs', config.pkgs );
 
         //If there are any "waiting to execute" modules in the registry,
         //update the maps for them, since their info, like URLs to load,
@@ -1645,12 +1657,12 @@ var requirejs, require, define;
       },
 
       makeRequire: function( relMap, options ) {
-        // console.log( 'makeRequire', defined );
+        context.log( 'makeRequire', defined );
 
         options = options || {};
 
         function localRequire( deps, callback, errback ) {
-          // console.log( 'localRequire', this );
+          context.log( 'localRequire', this );
 
           var id, map, requireMod;
 
@@ -1745,7 +1757,7 @@ var requirejs, require, define;
 
             var _return = context.nameToUrl( normalize( moduleNamePlusExt, relMap && relMap.id, true ), ext, true );
 
-            // // context.log( 'toUrl', moduleNamePlusExt, _return );
+            // context.log( 'toUrl', moduleNamePlusExt, _return );
 
             return _return;
 
@@ -1952,7 +1964,7 @@ var requirejs, require, define;
        * @private
        */
       execCb: function( name, callback, args, exports ) {
-        //// context.log( 'execCb', name );
+        //context.log( 'execCb', name );
 
         return callback.apply( exports, args );
       },
@@ -1985,11 +1997,11 @@ var requirejs, require, define;
        */
       onScriptError: function( evt ) {
 
-        // // context.log( 'onScriptError:context.config', context.config );     // config object
-        // // context.log( 'onScriptError:context.defined', context.defined );   // modules (loaded and unloaded)
-        // // context.log( 'onScriptError:context.registry', context.registry ); // looks like a dependency map
-        // // context.log( 'onScriptError:evt', evt ); // event
-        // // context.log( 'onScriptError:this', this );  // DOM element
+        // context.log( 'onScriptError:context.config', context.config );     // config object
+        // context.log( 'onScriptError:context.defined', context.defined );   // modules (loaded and unloaded)
+        // context.log( 'onScriptError:context.registry', context.registry ); // looks like a dependency map
+        // context.log( 'onScriptError:evt', evt ); // event
+        // context.log( 'onScriptError:this', this );  // DOM element
 
         var data = getScriptData( evt );
         if( !hasPathFallback( data.id ) ) {
@@ -2366,7 +2378,7 @@ var requirejs, require, define;
     req.nextTick( function otherScriptTags() {
 
       getAllElementsWithAttribute( 'data-main', 'script' ).each( function( element ) {
-        // console.log( 'data-main script', element );
+        //context.log( 'data-main script', element );
 
         if( !element.getAttribute( 'data-loading' ) && element.src == _last_script.src ) {
 

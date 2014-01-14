@@ -110,8 +110,8 @@ namespace UsabilityDynamics {
         $this->set( '_path', ( $args->path ? $args->path : '/scripts/' . $this->id . '.js' ) );
 
         // Bind Actions.
-        add_action( 'wp_footer', array( &$this, 'render_tag' ), 100 );
-        add_action( 'admin_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
+        add_action( 'wp_header', array( &$this, 'render_tag' ), 100 );
+        add_action( 'admin_print_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_preview_init', array( &$this, 'render_tag' ), 100 );
