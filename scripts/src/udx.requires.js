@@ -438,6 +438,9 @@ var requirejs, require, define;
       "udx.ui.jquery.tabs": {
         deps: [ 'jquery.ui' ]
       },
+      "knockout": {
+        // exports: "knockout"
+      },
       "knockout.mapping": {
         exports: "knockout.mapping",
         deps: [ 'knockout' ]

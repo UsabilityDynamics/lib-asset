@@ -121,12 +121,12 @@ namespace UsabilityDynamics {
         add_action( 'customize_preview_init', array( &$this, 'render_tag' ), 100 );
         add_action( 'login_enqueue_scripts', array( &$this, 'render_tag' ), 100 );
 
-        // Serve Scripts.
-        //add_action( 'admin_init', array( &$this, '_serve_model' ) );
-        //add_action( 'template_redirect', array( &$this, '_serve_model' ) );
-
+        // Serve AJAX Scripts.
         add_action( 'wp_ajax_' . $this->get( 'id' ), array( &$this, '_serve_model' ) );
         add_action( 'wp_ajax_nopriv_' . $this->get( 'id' ), array( &$this, '_serve_model' ) );
+
+        // Handle Rewrites.
+        // @todo Add rewrite manager.
 
         // @chainable.
         return $this;
