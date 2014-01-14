@@ -28,40 +28,13 @@ namespace UsabilityDynamics {
     class Requires extends \UsabilityDynamics\Utility {
 
       /**
-       * Instance Name.
-       *
-       * @public
-       * @property $name
-       * @type {Object}
-       */
-      public $name = null;
-
-      /**
-       * Instance Path.
-       *
-       * @public
-       * @property $path
-       * @type {Object}
-       */
-      public $path = null;
-
-      /**
-       * Public View.
-       *
-       * @public
-       * @property $public
-       * @type {Object}
-       */
-      public $public = false;
-
-      /**
        * Library Server.
        *
        * @public
        * @property $server
        * @type {Object}
        */
-      public $server = '//cdn.udx.io/require.js';
+      public static $server = '//cdn.udx.io/udx.requires.js';
 
       /**
        * Instance Settings.
@@ -70,26 +43,9 @@ namespace UsabilityDynamics {
        * @property $_settings
        * @type {Object}
        */
-      public $_settings = false;
+      private $_settings = array();
 
-      /**
-       * Rendered Flag.
-       *
-       * @public
-       * @property $_rendered
-       * @type {Object}
-       */
-      public static $_rendered = false;
-
-      /**
-       * Singleton Instance Reference.
-       *
-       * @public
-       * @static
-       * @property $instance
-       * @type {Object}
-       */
-      public static $instance = false;
+      public $_instances = array();
 
       /**
        * Constructor.
@@ -104,91 +60,67 @@ namespace UsabilityDynamics {
        *
        * @internal param array|mixed $args .path
        */
-      function __construct( $_atts = array() ) {
-
-        // Return Singleton Instance.
-        if( self::$instance ) {
-          //return self::$instance;
-        }
+      function __construct( $args = array() ) {
 
         // Save Instance.
         //self::$instance = &$this;
 
-        $args = (object) wp_parse_args( $_atts, array(
-          'name'     => 'main',
-          'path'     => '/script/',
-          'packages' => array(),
-          'shim'     => array(),
-          'paths'    => array(
-            'ajax'  => esc_url( admin_url( 'admin-ajax.php' ) ),
+        if( did_action( 'template_redirect' ) ) {
+          _doing_it_wrong( __FUNCTION__, sprintf( __( 'Requires called too late.' ) ) );
+        }
+
+        $args = self::parse_args( $args, array(
+          'name'   => 'main',
+          'type'   => 'model',
+          'context'  => '_',
+          'path'   => '/model/app',
+          'base'   => '/',
+
+          'data'  => array(),
+          'config' => array(),
+
+          'shim'   => array(),
+          'deps'   => array(),
+
+          'paths'  => array(
+            'api'  => esc_url( admin_url( 'admin-ajax.php' ) ),
             'home'  => esc_url( home_url( '/' ) ),
             'login' => wp_login_url()
           ),
-          'deps'     => array(),
-          'scope'    => array(),
-          'config'   => array(
-            'debug'   => defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? true : false,
-            'browser' => array(// wp_is_mobile() may not be available on admin
-              //'mobile' => wp_is_mobile(),
-              //'ios' => wp_is_mobile() && preg_match( '/iPad|iPod|iPhone/', $_SERVER['HTTP_USER_AGENT'] ),
-            )
-          )
-        ) );
+          'args'   => array(
+            "access-token" => "test"
+          ),
 
-        // Force Array.
-        $this->scope = (array) $args->scope;
+          'cache'  => '',
+          'vary'   => '',
+          'code' => 200
+        ));
 
-        // Set Instance Properties.
-        $this->name     = self::create_slug( $args->name ? $args->name : str_replace( '.js', '', basename( $args->path || '/main.js' ) ), array( 'separator' => '-' ) );
-        $this->path     = ( $args->path ? $args->path : '/scripts/' ) . $this->name . '.js';
-        $this->deps     = (array) $args->deps;
-        $this->shim     = (array) $args->shim;
-        $this->scope    = (array) $args->scope;
-        $this->packages = (array) $args->packages;
-        $this->paths    = (object) $args->paths;
-        $this->config   = (object) $args->config;
-
-        // Create Runtime Settings Instance.
+        // Create Stateless Settings.
         $this->_settings = new \UsabilityDynamics\Settings( array(
-          'id'        => $this->name,
-          'namespace' => 'UsabilityDynamics\Requires',
-          'runtime'   => true
-        ) );
+          "key" => $args->name
+        ));
 
-        if( in_array( 'public', $this->scope ) ) {
-          $this->public = true;
-        }
+        // Set Passed Arguments.
+        $this->set( $args );
 
-        if( in_array( 'preview', $this->scope ) ) {
-          $this->preview = true;
-        }
-
-        if( in_array( 'backend', $this->scope ) ) {
-          $this->backend = true;
-        }
-
-        if( in_array( 'login', $this->scope ) ) {
-          $this->login = true;
-        }
-
-        if( in_array( 'customizer', $this->scope ) ) {
-          $this->customizer = true;
-        }
-
-        $this->context = self::create_slug( $args->name, array( 'separator' => '_' ) );
+        // Compute Values.
+        $this->set( '_slug', self::create_slug( $args->name ? $args->name : str_replace( '.js', '', basename( $args->path || '/main.js' ) ), array( 'separator' => '-' ) ) );
+        $this->set( '_path', ( $args->path ? $args->path : '/scripts/' . $this->name . '.js' ) );
 
         // Bind Actions.
-        add_action( 'wp_head', array( &$this, '_render_tag' ), 100 );
-        add_action( 'wp_footer', array( &$this, '_render_tag' ), 100 );
-        add_action( 'admin_print_scripts', array( &$this, '_render_tag' ), 100 );
-        add_action( 'customize_controls_print_scripts', array( &$this, '_render_tag' ), 100 );
-        add_action( 'customize_controls_print_footer_scripts', array( &$this, '_render_tag' ), 100 );
-        add_action( 'customize_preview_init', array( &$this, '_render_tag' ), 100 );
-        add_action( 'login_enqueue_scripts', array( &$this, '_render_tag' ), 100 );
+        add_action( 'wp_footer', array( &$this, 'render_tag' ), 100 );
+        add_action( 'admin_print_scripts', array( &$this, 'render_tag' ), 100 );
+        add_action( 'customize_controls_print_scripts', array( &$this, 'render_tag' ), 100 );
+        add_action( 'customize_controls_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
+        add_action( 'customize_preview_init', array( &$this, 'render_tag' ), 100 );
+        add_action( 'login_enqueue_scripts', array( &$this, 'render_tag' ), 100 );
 
         // Serve Scripts.
-        add_action( 'admin_init', array( &$this, '_render_script' ) );
-        add_action( 'template_redirect', array( &$this, '_render_script' ) );
+        add_action( 'admin_init', array( &$this, '_serve_model' ) );
+        add_action( 'template_redirect', array( &$this, '_serve_model' ) );
+
+        // die( '<pre>' . print_r( $this->get(), true ) . '</pre>' );
 
         // @chainable.
         return $this;
@@ -196,12 +128,21 @@ namespace UsabilityDynamics {
       }
 
       /**
-       * Add Library / Dependencies
+       * Add Arbitray Data
        *
-       * @param string $lib
-       * @param array  $deps
+       * @param string $key
+       * @param null   $value
+       *
+       * @return null|\UsabilityDynamics\Settings
+       * @internal param array $data
        */
-      public function add( $lib = '', $deps = array() ) {
+      public function data( $key = '', $value = null ) {
+
+        if( $key && $value ) {
+          return $this->set( 'data' . '.' . $key, $value );
+        }
+
+        return $this->set( 'data', $key );
 
       }
 
@@ -217,41 +158,37 @@ namespace UsabilityDynamics {
        * @action wp_head - Frontend header scripts.
        * @action wp_footer - Frontend header scripts.
        */
-      public function _render_tag() {
+      public function render_tag() {
 
-        // Already Rendered.
-        if( self::$_rendered ) {
-          return;
-        }
+        $scope = is_admin() ? 'private' : 'public';
+
+        echo '<script data-scope="' . $scope . '" data-name="' . $this->get( 'name' ) . '" data-main="' . $this->get( '_path' ) . '" src="' . self::$server . '"></script>' . "\n";
+
+        return;
 
         // Standard Admin.
         if( current_filter() == 'admin_print_scripts' && $this->backend ) {
           echo '<script data-scope="admin" data-name="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
-          self::$_rendered = true;
         }
 
         // Admin Customizer Controls.
         if( current_filter() == 'customize_controls_print_scripts' && $this->customizer ) {
           echo '<script data-scope="customizer" data-name="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
-          self::$_rendered = true;
         }
 
         // Login Scripts.
         if( current_filter() == 'login_enqueue_scripts' && $this->login ) {
           echo '<script data-scope="login" data-name="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
-          self::$_rendered = true;
         }
 
         // Public Frontend.
-        if( current_filter() == 'wp_head' && $this->public ) {
+        if( current_filter() == 'wp_footer' && $this->public ) {
           echo '<script data-scope="public" data-name="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
-          self::$_rendered = true;
         }
 
         // Frontned Customization Preview.
         if( current_filter() == 'customize_preview_init' && $this->preview ) {
           echo '<script data-scope="preview" data-name="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
-          self::$_rendered = true;
         }
 
       }
@@ -259,18 +196,22 @@ namespace UsabilityDynamics {
       /**
        * Serve Scripts.
        *
+       *  @todo add html_entity_decode() for data strings.
+       *
        * @action template_redirect
        * @action admin_init
        */
-      function _render_script() {
+      public function _serve_model() {
 
-        if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === $this->path ) {
+        if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === $this->get( '_path' ) ) {
 
           // Generate Action Handler.
           do_action( 'ud:requires', $this );
 
           // Instance Action Handler.
-          do_action( 'ud:requires:' . $this->name );
+          do_action( 'ud:requires:' . $this->get( 'name' ) );
+
+          //die( '<pre>' . print_r( $this->get(), true ) . '</pre>' );
 
           // Set Headers.
           add_filter( 'nocache_headers', function ( $headers ) {
@@ -279,58 +220,44 @@ namespace UsabilityDynamics {
               $headers = array();
             }
 
-            // JavaScript Asset.
-            $headers[ 'Content-Type' ] = 'application/javascript; charset=' . get_bloginfo( 'charset' );
+            $this->set( '_headers', array(
+              'Content-Type'    => 'application/javascript; charset=' . get_bloginfo( 'charset' ),
+              'X-Frame-Options' => 'SAMEORIGIN',
+              'Vary'            => 'Accept-Encoding'
+            ));
 
-            // limit rendering of pages to same origin iframes
-            $headers[ 'X-Frame-Options' ] = 'SAMEORIGIN';
+            // $headers = apply_filters( 'ud:requires:headers', $headers );
 
-            // Varnish Support.
-            $headers[ 'Vary' ] = 'Accept-Encoding';
+            return $this->get( '_headers' );
 
-            $headers = apply_filters( 'ud:requires:headers', $headers );
-
-            return $headers;
-
-          } );
+          });
 
           // Standard Headers.
           nocache_headers();
 
           // WordPress will try to make it 404.
-          http_response_code( 200 );
+          http_response_code( $this->get( 'code', 200 ) );
 
-          $_config = apply_filters( 'ud:requires:config', array(
-            // 'baseUrl' => home_url( 'scripts/vendor' ),
-            // 'urlArgs' => array(),
-            'context' => $this->context,
-            'paths'   => (object) $this->paths,
-            //'packages' => (array) $this->packages,
-            'deps'    => (array) $this->deps,
-            'config'  => $this->config
-          ) );
+          $data = apply_filters( 'ud:requires:config', array(
+            'type'    => $this->get( 'type' ),
+            'name'    => $this->get( 'name' ),
+            'context' => $this->get( 'context' ),
+            'baseUrl' => $this->get( 'base' ),
+            'urlArgs' => $this->get( 'args' ),
+            'paths'   => $this->get( 'paths' ),
+            'config'  => $this->get( 'config' ),
+            'data'    => $this->get( 'data' ),
+            'deps'    => $this->get( 'deps' )
+          ));
 
-          //die( '<pre>' . print_r( $_config, true ) . '</pre>' );
-
-          $_output = array(
-            '/** ---- ' . $this->name . ' ----- */'
-          );
-
-          if( $this->config->debug ) {
-            $_output[ ] = 'console.log( "ud.requires", "' . $this->name . '");';
-            $_output[ ] = 'console.log( "ud.requires.config", ' . json_encode( (object) $_config ) . ');';
-          }
-
-          $_output[ ] = 'require.config(' . json_encode( (object) $_config ) . ');';
-          $_output[ ] = 'require( [], function() { console.log( "app done", arguments ); } );';
-
-          do_action( 'ud:requires:output', $_output );
-
-          // Clean array and uutput JavaScript.
-          die( implode( "\n", array_filter( (array) $_output ) ) );
+          self::send( array_filter( $data ) );
 
         }
 
+      }
+
+      public static function send( $data ) {
+        die( 'define(' . json_encode( $data ) . ');' );
       }
 
       /**
@@ -389,8 +316,8 @@ namespace UsabilityDynamics {
        * @author potanin@UD
        * @since 0.1.1
        */
-      public static function get( $key, $default = null ) {
-        return self::$instance->_settings ? self::$instance->_settings->get( $key, $default ) : null;
+      public function get( $key, $default = null ) {
+        return $this->_settings ? $this->_settings->get( $key, $default ) : null;
       }
 
       /**
@@ -404,23 +331,12 @@ namespace UsabilityDynamics {
        * @author potanin@UD
        * @since 0.1.1
        */
-      public static function set( $key, $value = null ) {
-        return self::$instance->_settings ? self::$instance->_settings->set( $key, $value ) : null;
+      public function set( $key, $value = null ) {
+        return $this->_settings ? $this->_settings->set( $key, $value ) : null;
       }
 
-      /**
-       * Get the Cluster Singleton
-       *
-       * Concept based on the CodeIgniter get_instance() concept.
-       *
-       * @static
-       * @return object
-       *
-       * @method get_instance
-       * @for Requires
-       */
-      public static function &get_instance() {
-        return self::$instance;
+      public static function get_instance() {
+        return self::$instances;
       }
 
     }

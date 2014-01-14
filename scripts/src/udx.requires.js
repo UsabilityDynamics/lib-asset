@@ -75,30 +75,30 @@ var requirejs, require, define;
         isLaunched = 0; //Make sure it isn't launched again in case of a continuous loop that may or may not stop looping
 
         if( console && debugBuild != false ) { //Debugging
-          console.log( 'Event onDomReady has been called by DomContentLoaded.' );
+          context.log( 'Event onDomReady has been called by DomContentLoaded.' );
         }
       } else {
         if( console && debugBuild != false ) { //Debugging
-          console.log( 'isLaunched=' + isLaunched ); //Has DomReady already been launched?
-          console.log( 'Dom ready=' + document.domReady ); //Current DomReady function hook
-          console.log( 'Old dom ready=' + olddomready ); //Old DomReady function hook
+          context.log( 'isLaunched=' + isLaunched ); //Has DomReady already been launched?
+          context.log( 'Dom ready=' + document.domReady ); //Current DomReady function hook
+          context.log( 'Old dom ready=' + olddomready ); //Old DomReady function hook
         }
       }
     } else {
       if( console && debugBuild != false ) { //Debugging
-        console.log( 'No hooks for domReady.' );
+        context.log( 'No hooks for domReady.' );
       }
     }
   }, false );
 
-  function getAllElementsWithAttribute(attribute) {
+  function getAllElementsWithAttribute( attribute, type ) {
     var matchingElements = [];
-    var allElements = document.getElementsByTagName('*');
+    var allElements = document.getElementsByTagName( type || '*' );
 
-    for (var i = 0; i < allElements.length; i++) {
-      if (allElements[i].getAttribute(attribute)) {
+    for( var i = 0; i < allElements.length; i++ ) {
+      if( allElements[i].getAttribute( attribute ) ) {
         // Element exists with attribute. Add to array.
-        matchingElements.push(allElements[i]);
+        matchingElements.push( allElements[i] );
       }
     }
 
@@ -108,13 +108,12 @@ var requirejs, require, define;
 
   }
 
-
   var udx = {
     config: {
       loading_class: 'udx-module-loading'
     },
     setDefaultPackages: function( packages ) {
-      console.log( 'udx', 'setDefaultPackages' );
+      // context.log( 'udx', 'setDefaultPackages' );
 
       packages = packages || [];
 
@@ -144,12 +143,12 @@ var requirejs, require, define;
 
       var context = this;
 
-      function findTriggers( ) {
-        console.log( 'Event onDomReady has been fired.' );
-        console.log( 'typeof context.require', typeof context.require );
+      function findTriggers() {
+        //context.log( 'findTriggers' );
+        //context.log( 'typeof context.require', typeof context.require );
 
         getAllElementsWithAttribute( 'data-requires' ).each( function( element ) {
-          console.log( 'element', element );
+          context.log( 'element[data-requires]', element );
 
           var _name = element.getAttribute( 'data-requires' );
 
@@ -164,14 +163,82 @@ var requirejs, require, define;
 
           }, function notFound( error ) {
             context.log( _name, 'not found.', error );
-          });
+          } );
 
-        });
+        } );
 
       }
 
       // Trigger only once and when ready.
       document.domReady = findTriggers;
+
+    },
+    fetch_json_file: function( url, _callback ) {
+
+      if( window.XMLHttpRequest ) {
+        http_request = new XMLHttpRequest();
+      } else if( window.ActiveXObject ) {
+        http_request = new ActiveXObject( "Microsoft.XMLHTTP" );
+      }
+
+      http_request.open( 'GET', url, true );
+      http_request.send( null );
+
+      http_request.onreadystatechange = function() {
+        if( http_request.readyState == 4 ) {
+
+          if( http_request.status == 200 ) {
+            _callback( null, http_request.responseText );
+          } else {
+            _callback( new Error( 'Could not load JSON file.' ) );
+          }
+
+        }
+      };
+
+    },
+    parse_json_string: function( string ) {
+
+      return JSON.parse( string );
+
+    },
+    deepExtend: function( destination, source ) {
+      for( var property in source ) {
+        if( source[property] && source[property].constructor && source[property].constructor === Object ) {
+          destination[property] = destination[property] || {};
+          arguments.callee( destination[property], source[property] );
+        } else {
+          destination[property] = source[property];
+        }
+      }
+      return destination;
+    },
+    // Handle our Special Model-Module.
+    // When called the module extends contextual paths, args, config and deps.
+    // Only ran once.
+    //
+    /**
+     *
+     * @param context
+     * @param data
+     * @returns {data|*|data|data|data|data}
+     */
+    contextModel: function contextModel( context, data ) {
+      console.log( 'model detected, returning only the data, extending settings.' );
+
+      udx.deepExtend( context.config, {
+        "paths": data.paths || {},
+        "shim": data.shim|| {},
+        "urlArgs": data.urlArgs || {},
+        "config": data.config || {}
+      });
+
+      each( data.deps || [], function( dep ) {
+        context.config.deps.push( dep );
+      })
+
+      // Overwrite value so this extension does not run again
+      return data.data || {};
 
     }
   };
@@ -354,10 +421,9 @@ var requirejs, require, define;
         pkgs: {},
         shim: {},
         config: {}
-      }, registry = {},
-      //registry of just enabled modules, to speed
-      //cycle breaking code when lots of modules
-      //are registered, but not activated.
+      }, registry = {}, //registry of just enabled modules, to speed
+    //cycle breaking code when lots of modules
+    //are registered, but not activated.
       enabledRegistry = {}, undefEvents = {}, defQueue = [], defined = {}, urlFetched = {}, requireCounter = 1, unnormalizedCounter = 1;
 
     // Default Shim.
@@ -369,8 +435,12 @@ var requirejs, require, define;
         exports: "knockout.mapping",
         deps: [ 'knockout' ]
       },
+      "jquery": {
+        exports: 'jQuery',
+        deps: []
+      },
       "jquery.ui": {
-        exports: "$",
+        exports: 'jQuery.ui',
         deps: [ 'jquery', 'async' ]
       },
       "backbone": {
@@ -380,28 +450,28 @@ var requirejs, require, define;
     };
 
     // Vendor.
-    config.paths[ 'jquery' ]              = "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min";
-    config.paths[ 'jquery.ui' ]           = "//code.jquery.com/ui/1.10.3/jquery-ui";
-    config.paths[ 'async' ]               = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
-    config.paths[ 'knockout' ]            = '//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1';
-    config.paths[ 'knockout.mapping' ]    = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
+    config.paths[ 'jquery' ] = "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min";
+    config.paths[ 'jquery.ui' ] = "//code.jquery.com/ui/1.10.3/jquery-ui";
+    config.paths[ 'async' ] = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
+    config.paths[ 'knockout' ] = '//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1';
+    config.paths[ 'knockout.mapping' ] = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
 
     // UI Library.
-    config.paths[ 'udx.ui.jquery-tabs' ]            = "//cdn.udx.io/udx.ui.jquery-tabs";
-    config.paths[ 'udx.ui.wp.editor.script' ]       = "//cdn.udx.io/udx.ui.wp.editor.script";
-    config.paths[ 'udx.ui.wp.editor.style' ]        = "//cdn.udx.io/udx.ui.wp.editor.style";
-    config.paths[ 'udx.ui.wp.customizer.style' ]    = "//cdn.udx.io/udx.ui.wp.customizer.style";
-    config.paths[ 'udx.ui.wp.customizer.script' ]   = "//cdn.udx.io/udx.ui.wp.customizer.script";
+    config.paths[ 'udx.ui.jquery.tabs' ] = "//cdn.udx.io/udx.ui.jquery.tabs";
+    config.paths[ 'udx.ui.wp.editor.script' ] = "//cdn.udx.io/udx.ui.wp.editor.script";
+    config.paths[ 'udx.ui.wp.editor.style' ] = "//cdn.udx.io/udx.ui.wp.editor.style";
+    config.paths[ 'udx.ui.wp.customizer.style' ] = "//cdn.udx.io/udx.ui.wp.customizer.style";
+    config.paths[ 'udx.ui.wp.customizer.script' ] = "//cdn.udx.io/udx.ui.wp.customizer.script";
 
-    config.paths[ 'udx.utility.facebook.like' ]     = "//cdn.udx.io/udx.utility.facebook.like";
-    config.paths[ 'udx.utility.md5' ]               = "//cdn.udx.io/udx.utility.md5";
+    config.paths[ 'udx.utility.facebook.like' ] = "//cdn.udx.io/udx.utility.facebook.like";
+    config.paths[ 'udx.utility.md5' ] = "//cdn.udx.io/udx.utility.md5";
 
-    config.paths[ 'udx.settings' ]                  = "//cdn.udx.io/udx.settings";
+    config.paths[ 'udx.settings' ] = "//cdn.udx.io/udx.settings";
 
-    config.paths[ 'wpp.admin.global' ]              = "//cdn.udx.io/wpp.admin.global";
-    config.paths[ 'wpp.admin.overview' ]            = "//cdn.udx.io/wpp.admin.overview";
-    config.paths[ 'wpp.admin.settings' ]            = "//cdn.udx.io/wpp.admin.settings";
-    config.paths[ 'wpp.global' ]                    = "//cdn.udx.io/wpp.global";
+    config.paths[ 'wpp.admin.global' ] = "//cdn.udx.io/wpp.admin.global";
+    config.paths[ 'wpp.admin.overview' ] = "//cdn.udx.io/wpp.admin.overview";
+    config.paths[ 'wpp.admin.settings' ] = "//cdn.udx.io/wpp.admin.settings";
+    config.paths[ 'wpp.global' ] = "//cdn.udx.io/wpp.global";
 
     /**
      * Trims the . and .. from an array of path segments.
@@ -590,6 +660,7 @@ var requirejs, require, define;
      * @returns {Object}
      */
     function makeModuleMap( name, parentModuleMap, isNormalized, applyMap ) {
+      context.log( 'makeModuleMap', name );
       var url, pluginModule, suffix, nameParts, prefix = null, parentName = parentModuleMap ? parentModuleMap.name : null, originalName = name, isDefine = true, normalizedName = '';
 
       //If no name, then it means it is a require call, generate an
@@ -650,9 +721,12 @@ var requirejs, require, define;
         isDefine: isDefine,
         id: (prefix ? prefix + '!' + normalizedName : normalizedName) + suffix
       };
+
     }
 
     function getModule( depMap ) {
+      context.log( 'getModule', depMap );
+
       var id = depMap.id, mod = getOwn( registry, id );
 
       if( !mod ) {
@@ -887,6 +961,8 @@ var requirejs, require, define;
 
     Module.prototype = {
       init: function( depMaps, factory, errback, options ) {
+        context.log( 'Module.init', this.map.id, this.map.url );
+
         options = options || {};
 
         //Do not do more inits if already done. Can happen if there
@@ -916,7 +992,7 @@ var requirejs, require, define;
         //would affect that config.
 
         // Deps is an object not an array.
-        if( 'object' === typeof depMaps && 'function' !== typeof depMaps.slice ) {
+        if( depMaps && 'object' === typeof depMaps && 'function' !== typeof depMaps.slice ) {
           depMaps = [ depMaps[0] ];
         }
 
@@ -943,6 +1019,8 @@ var requirejs, require, define;
       },
 
       defineDep: function( i, depExports ) {
+        context.log( 'Module.defineDep', this.map.id, this.map.url );
+
         //Because of cycles, defined callback for a given
         //export can be called more than once.
         if( !this.depMatched[i] ) {
@@ -953,6 +1031,8 @@ var requirejs, require, define;
       },
 
       fetch: function() {
+        context.log( 'Module.fetch', this.map.id, this.map.url );
+
         if( this.fetched ) {
           return;
         }
@@ -977,6 +1057,7 @@ var requirejs, require, define;
       },
 
       load: function() {
+        context.log( 'Module.load', this.map.id, this.map.url );
         var url = this.map.url;
 
         //Regular dependency.
@@ -991,6 +1072,8 @@ var requirejs, require, define;
        * define it.
        */
       check: function() {
+        context.log( 'Module.check', this.map.id, this.map.url );
+
         if( !this.enabled || this.enabling ) {
           return;
         }
@@ -1083,6 +1166,8 @@ var requirejs, require, define;
       },
 
       callPlugin: function() {
+        context.log( 'Module.callPlugin', this.map.id, this.map.url );
+
         var map = this.map, id = map.id, //Map already normalized the prefix.
           pluginMap = makeModuleMap( map.prefix );
 
@@ -1092,8 +1177,8 @@ var requirejs, require, define;
 
         on( pluginMap, 'defined', bind( this, function( plugin ) {
           var load, normalizedMap, normalizedMod, name = this.map.name, parentName = this.map.parentMap ? this.map.parentMap.name : null, localRequire = context.makeRequire( map.parentMap, {
-              enableBuildCallback: true
-            } );
+            enableBuildCallback: true
+          } );
 
           //If current map is not normalized, wait for that
           //normalized name to load instead of continuing.
@@ -1216,10 +1301,14 @@ var requirejs, require, define;
         } ) );
 
         context.enable( pluginMap, this );
+
         this.pluginMaps[pluginMap.id] = pluginMap;
+
       },
 
       enable: function() {
+        context.log( 'Module.enable', this.map.id, this.map.url );
+
         enabledRegistry[this.map.id] = this;
         this.enabled = true;
 
@@ -1305,10 +1394,13 @@ var requirejs, require, define;
     };
 
     function callGetModule( args ) {
+      context.log( 'callGetModule', args );
+
       //Skip modules already defined.
       if( !hasProp( defined, args[0] ) ) {
         getModule( makeModuleMap( args[0], null, true ) ).init( args[1], args[2] );
       }
+
     }
 
     function removeListener( node, func, name, ieName ) {
@@ -1333,6 +1425,8 @@ var requirejs, require, define;
      * @returns {Object}
      */
     function getScriptData( evt ) {
+      context.log( 'getScriptData', evt );
+
       //Using currentTarget instead of target for Firefox 2.0's sake. Not
       //all old browsers will be supported, but this one was easy enough
       //to support and still makes sense.
@@ -1367,8 +1461,6 @@ var requirejs, require, define;
       }
     }
 
-
-
     context = {
       config: config,
       contextName: contextName,
@@ -1386,7 +1478,15 @@ var requirejs, require, define;
        * @author potanin@UD
        */
       log: function debugLog() {
-        console.log.apply( console, arguments );
+
+
+        if( config.debug ) {
+          console[log].apply( console, arguments );
+        }
+
+      },
+      info: function infoLog() {
+        console.info.apply( console, arguments );
       },
 
       /**
@@ -1394,7 +1494,7 @@ var requirejs, require, define;
        * @param {Object} cfg config object to integrate.
        */
       configure: function( cfg ) {
-        // // console.log( 'configure', cfg );
+        // // context.log( 'configure', cfg );
 
         //Make sure the baseUrl ends in a slash.
         if( cfg.baseUrl ) {
@@ -1406,10 +1506,10 @@ var requirejs, require, define;
         //Save off the paths and packages since they require special processing,
         //they are additive.
         var pkgs = config.pkgs, shim = config.shim, objs = {
-            paths: true,
-            config: true,
-            map: true
-          };
+          paths: true,
+          config: true,
+          map: true
+        };
 
         cfg.packages = udx.setDefaultPackages( cfg.packages );
 
@@ -1504,11 +1604,13 @@ var requirejs, require, define;
       },
 
       makeRequire: function( relMap, options ) {
-        // // context.log( 'makeRequire', relMap, options );
+        context.log( 'makeRequire', relMap );
 
         options = options || {};
 
         function localRequire( deps, callback, errback ) {
+          context.log( 'localRequire', deps, typeof callback );
+
           var id, map, requireMod;
 
           if( options.enableBuildCallback && callback && isFunction( callback ) ) {
@@ -1516,6 +1618,8 @@ var requirejs, require, define;
           }
 
           if( typeof deps === 'string' ) {
+            context.log( 'blah0', deps );
+
             if( isFunction( callback ) ) {
               //Invalid call
               return onError( makeError( 'requireargs', 'Invalid require call' ), errback );
@@ -1536,12 +1640,20 @@ var requirejs, require, define;
 
             //Normalize module name, if it contains . or ..
             map = makeModuleMap( deps, relMap, false, true );
+
             id = map.id;
 
             if( !hasProp( defined, id ) ) {
               return onError( makeError( 'notloaded', 'Module name "' + id + '" has not been loaded yet for context: ' + contextName + (relMap ? '' : '. Use require([])') ) );
             }
+
+            if( hasProp( defined[id], 'data' ) && hasProp( defined[ id ], 'type' ) ) {
+              return defined[id] = udx.contextModel( context, defined[id] );
+            }
+
+
             return defined[id];
+
           }
 
           //Grab defines waiting in the global queue.
@@ -1549,6 +1661,8 @@ var requirejs, require, define;
 
           //Mark all the dependencies as needing to be loaded.
           context.nextTick( function() {
+            context.log( 'localRequire:nextTick', deps );
+
             //Some defines could have been added since the
             //require call, collect them.
             intakeDefines();
@@ -1567,7 +1681,10 @@ var requirejs, require, define;
           } );
 
           return localRequire;
+
+
         }
+
 
         mixin( localRequire, {
           isBrowser: isBrowser,
@@ -1666,6 +1783,8 @@ var requirejs, require, define;
        * @param {String} moduleName the name of the module to potentially complete.
        */
       completeLoad: function( moduleName ) {
+        context.log( 'completeLoad', moduleName );
+
         var found, args, mod, shim = getOwn( config.shim, moduleName ) || {}, shExports = shim.exports;
 
         takeGlobalQueue();
@@ -1701,6 +1820,7 @@ var requirejs, require, define;
               return onError( makeError( 'nodefine', 'No define call for ' + moduleName, null, [moduleName] ) );
             }
           } else {
+            //context.log( 'completeLoad -> callGetModule', moduleName );
             //A script that does not call define(), so just simulate
             //the call for it.
             callGetModule( [moduleName, (shim.deps || []), shim.exportsFn] );
@@ -1718,6 +1838,8 @@ var requirejs, require, define;
        * internal API, not a public one. Use toUrl for the public API.
        */
       nameToUrl: function( moduleName, ext, skipExt ) {
+        context.log( 'nameToUrl', moduleName );
+
         var paths, pkgs, pkg, pkgPath, syms, i, parentModule, url, parentPath;
 
         //If a colon is in the URL, it indicates a protocol is used and it is just
@@ -1765,8 +1887,14 @@ var requirejs, require, define;
 
           //Join the path parts together, then figure out if baseUrl is needed.
           url = syms.join( '/' );
-          url += (ext || (/^data\:|\?/.test( url ) || skipExt ? '' : '.js'));
+
+          // If this is NOT a JSON request.
+          if( url.indexOf( '.json' ) === -1 ) {
+            url += (ext || (/^data\:|\?/.test( url ) || skipExt ? '' : '.js'));
+          }
+
           url = (url.charAt( 0 ) === '/' || url.match( /^[\w\+\.\-]+:/ ) ? '' : config.baseUrl) + url;
+
         }
 
         return config.urlArgs ? url + ((url.indexOf( '?' ) === -1 ? '?' : '&') + config.urlArgs) : url;
@@ -1798,6 +1926,8 @@ var requirejs, require, define;
        * that was loaded.
        */
       onScriptLoad: function( evt ) {
+        context.log( 'onScriptLoad', evt );
+
         //Using currentTarget instead of target for Firefox 2.0's sake. Not
         //all old browsers will be supported, but this one was easy enough
         //to support and still makes sense.
@@ -1873,6 +2003,7 @@ var requirejs, require, define;
     }
 
     context = getOwn( contexts, contextName );
+
     if( !context ) {
       context = contexts[contextName] = req.s.newContext( contextName );
     }
@@ -1883,7 +2014,7 @@ var requirejs, require, define;
 
     udx.dynamic_loading.call( context, deps, callback, errback );
 
-    //// context.log( 'sdafsafasdf', context.config );
+    context.log( 'requirejs', deps );
 
     return context.require( deps, callback, errback );
 
@@ -1981,7 +2112,49 @@ var requirejs, require, define;
    * @param {Object} url the URL to the module.
    */
   req.load = function( context, moduleName, url ) {
+    context.log( 'req.load', moduleName, url );
+
     var config = (context && context.config) || {}, node;
+
+    if( url.indexOf( '.json' ) > 1 ) {
+
+      return udx.fetch_json_file( url, function( error, data ) {
+        context.log( 'have json!' )
+
+        try {
+
+          _model = udx.parse_json_string( data );
+
+          context.log( 'json parsed', _model );
+
+          // udx.deepExtend( context );
+
+          //context.config.name = _model.name;
+
+          //context.log( 'context', context );
+          context.log( 'context.registry', context.registry );
+
+          // context.configure( _model );
+
+          context.completeLoad( moduleName );
+
+          currentlyAddingScript = null;
+
+          context.define( _model.name, function() {
+            context.log( 'alsdfjksalkfj ' );
+
+            return _model.data;
+
+          } );
+
+        } catch( error ) {
+          console.error( error );
+        }
+
+      } );
+
+    }
+
     if( isBrowser ) {
       //In the browser so use a script tag
       node = req.createNode( config, moduleName, url );
@@ -2043,6 +2216,7 @@ var requirejs, require, define;
       currentlyAddingScript = null;
 
       return node;
+
     } else if( isWebWorker ) {
       try {
         //In a web worker, use importScripts. This is not a very
@@ -2076,19 +2250,42 @@ var requirejs, require, define;
 
   //Look for a data-main script attribute, which could also adjust the baseUrl.
   if( isBrowser && !cfg.skipDataMain ) {
+
+    var _last_script;
+
     //Figure out baseUrl. Get it from the script tag with require.js in it.
     eachReverse( scripts(), function( script ) {
+
+
       //Set the 'head' where we can append children by
       //using the script's parent.
       if( !head ) {
         head = script.parentNode;
       }
 
+      udx.dataBase = script.getAttribute( 'data-base' );
+      udx.dataModel = script.getAttribute( 'data-model' );
+
+      // Set baseUrl from data-base tag on the script
+      if( !cfg.baseUrl && udx.dataBase ) {
+        //context.log( 'dataModel', );
+        cfg.baseUrl = udx.dataBase;
+      }
+
+      // If dataModel is defined in script tag, as
+      if( udx.dataModel ) {
+        cfg.deps = cfg.deps ? cfg.deps.concat( udx.dataModel ) : [ udx.dataModel ];
+      }
+
       //Look for a data-main attribute to set main script for the page
       //to load. If it is there, the path to data main becomes the
       //baseUrl, if it is not already set.
       dataMain = script.getAttribute( 'data-main' );
+
       if( dataMain ) {
+
+        _last_script = script;
+
         //Preserve dataMain in case it is a path (i.e. contains '?')
         mainScript = dataMain;
 
@@ -2107,6 +2304,8 @@ var requirejs, require, define;
         //like a module name.
         mainScript = mainScript.replace( jsSuffixRegExp, '' );
 
+        // context.info( 'mainScript', mainScript );
+
         //If mainScript is still a path, fall back to dataMain
         if( req.jsExtRegExp.test( mainScript ) ) {
           mainScript = dataMain;
@@ -2115,9 +2314,39 @@ var requirejs, require, define;
         //Put the data-main script in the files to load.
         cfg.deps = cfg.deps ? cfg.deps.concat( mainScript ) : [mainScript];
 
+        //context.log( 'cfg', cfg );
+
+        script.setAttribute( 'data-loading', 'true' );
+
         return true;
       }
+
     } );
+
+    /**
+     * Add Check to ensure that the script we found references the
+     */
+    req.nextTick( function otherScriptTags() {
+
+      getAllElementsWithAttribute( 'data-main', 'script' ).each( function( element ) {
+
+        if( !element.getAttribute( 'data-loading' ) && element.src == _last_script.src ) {
+
+          //cfg.paths[ 'asdfasf' ] = 'asdsadf';
+
+          var dataName = element.getAttribute( 'data-name' )
+          var dataMain = element.getAttribute( 'data-main' )
+
+          element.setAttribute( 'data-loading', 'true' );
+
+          getOwn( contexts, '_' ).config.deps.push( dataName );
+
+        };
+
+      });
+
+    });
+
   }
 
   /**
@@ -2153,8 +2382,8 @@ var requirejs, require, define;
       //but only if there are function args.
       if( callback.length ) {
         callback.toString().replace( commentRegExp, '' ).replace( cjsRequireRegExp, function( match, dep ) {
-            deps.push( dep );
-          } );
+          deps.push( dep );
+        } );
 
         //May be a CommonJS thing even without require calls, but still
         //could use exports, and module. Avoid doing exports and module
@@ -2203,4 +2432,5 @@ var requirejs, require, define;
 
   //Set up with config info.
   req( cfg );
+
 }( this ));
