@@ -150,10 +150,17 @@ var requirejs, require, define;
         getAllElementsWithAttribute( 'data-requires' ).each( function( element ) {
           context.log( 'element[data-requires]', element );
 
-          var _name = element.getAttribute( 'data-requires' );
+          // Only load once.
+          if( element.getAttribute( 'data-status' ) ) {
+            return;
+          }
 
-          context.require( [ _name ], function moduleLoaded( callback ) {
+          element.setAttribute( 'data-status', 'loading' );
+
+          context.require( [ element.getAttribute( 'data-requires' ) ], function moduleLoaded( callback ) {
             // context.log( 'moduleLoaded', _name, typeof callback );
+
+            element.setAttribute( 'data-status', 'ready' );
 
             if( 'function' === typeof callback ) {
 
@@ -162,10 +169,10 @@ var requirejs, require, define;
             }
 
           }, function notFound( error ) {
-            context.log( _name, 'not found.', error );
+            context.log( element.getAttribute( 'data-requires' ), 'not found.', error );
           } );
 
-        } );
+        });
 
       }
 
@@ -824,7 +831,37 @@ var requirejs, require, define;
               c = pkg ? getOwn( config.config, mod.map.id + '/' + pkg.main ) : getOwn( config.config, mod.map.id );
               return  c || {};
             },
-            exports: defined[mod.map.id]
+            exports: defined[mod.map.id],
+            /**
+             * Module Logger.
+             *
+             * @author potanin@UD
+             * @returns {*}
+             */
+            log: function moduleLog() {
+              console.log.call( console, this.id, arguments );
+              return arguments[0];
+            },
+            /**
+             * Module Error Logger
+             *
+             * @author potanin@UD
+             * @returns {*}
+             */
+            error: function moduleError() {
+              console.error.call( console, this.id, arguments );
+              return arguments[0];
+            },
+            /**
+             * Module Debugger
+             *
+             * @author potanin@UD
+             * @returns {*}
+             */
+            debug: function moduleDebug() {
+              console.debug.call( console, this.id, arguments );
+              return arguments[0];
+            }
           });
         }
       }
@@ -2330,18 +2367,18 @@ var requirejs, require, define;
 
       getAllElementsWithAttribute( 'data-main', 'script' ).each( function( element ) {
 
-        if( !element.getAttribute( 'data-loading' ) && element.src == _last_script.src ) {
+        if( !element.getAttribute( 'data-loading' ) && _last_script && element.src == _last_script.src ) {
 
           //cfg.paths[ 'asdfasf' ] = 'asdsadf';
 
-          var dataName = element.getAttribute( 'data-name' )
-          var dataMain = element.getAttribute( 'data-main' )
+          var dataName = element.getAttribute( 'data-name' );
+          var dataMain = element.getAttribute( 'data-main' );
 
           element.setAttribute( 'data-loading', 'true' );
 
           getOwn( contexts, '_' ).config.deps.push( dataName );
 
-        };
+        }
 
       });
 

@@ -72,57 +72,61 @@ namespace UsabilityDynamics {
         }
 
         $args = self::parse_args( $args, array(
-          'name'   => 'main',
-          'type'   => 'model',
-          'context'  => '_',
-          'path'   => '/model/app',
-          'base'   => '/',
+          'id'        => 'main',
+          'type'      => 'model',
+          'context'   => '_',
+          'path'      => admin_url( 'admin-ajax.php?action=' . $args[ 'id' ] ),
+          'reqrite'   => null,
 
-          'data'  => array(),
-          'config' => array(),
+          'data'      => array(),
+          'config'    => array(),
 
-          'shim'   => array(),
-          'deps'   => array(),
+          'shim'      => array(),
+          'deps'      => array(),
 
-          'paths'  => array(
-            'api'  => esc_url( admin_url( 'admin-ajax.php' ) ),
+          'paths' => array(
+            'api'   => esc_url( admin_url( 'admin-ajax.php' ) ),
             'home'  => esc_url( home_url( '/' ) ),
             'login' => wp_login_url()
           ),
+
+          // Extra Module Request Arguments.
           'args'   => array(
-            "access-token" => "test"
+            "token" => "test"
           ),
 
+          // HTTP Headers.
           'cache'  => '',
           'vary'   => '',
           'code' => 200
         ));
 
         // Create Stateless Settings.
-        $this->_settings = new \UsabilityDynamics\Settings( array(
-          "key" => $args->name
+        $this->_settings = new Settings( array(
+          'key' => $args->id
         ));
 
         // Set Passed Arguments.
         $this->set( $args );
 
         // Compute Values.
-        $this->set( '_slug', self::create_slug( $args->name ? $args->name : str_replace( '.js', '', basename( $args->path || '/main.js' ) ), array( 'separator' => '-' ) ) );
-        $this->set( '_path', ( $args->path ? $args->path : '/scripts/' . $this->name . '.js' ) );
+        $this->set( '_slug', self::create_slug( $args->id ? $args->id : str_replace( '.js', '', basename( $args->path || '/main.js' ) ), array( 'separator' => '-' ) ) );
+        $this->set( '_path', ( $args->path ? $args->path : '/scripts/' . $this->id . '.js' ) );
 
         // Bind Actions.
         add_action( 'wp_footer', array( &$this, 'render_tag' ), 100 );
-        add_action( 'admin_print_scripts', array( &$this, 'render_tag' ), 100 );
+        add_action( 'admin_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_preview_init', array( &$this, 'render_tag' ), 100 );
         add_action( 'login_enqueue_scripts', array( &$this, 'render_tag' ), 100 );
 
         // Serve Scripts.
-        add_action( 'admin_init', array( &$this, '_serve_model' ) );
-        add_action( 'template_redirect', array( &$this, '_serve_model' ) );
+        //add_action( 'admin_init', array( &$this, '_serve_model' ) );
+        //add_action( 'template_redirect', array( &$this, '_serve_model' ) );
 
-        // die( '<pre>' . print_r( $this->get(), true ) . '</pre>' );
+        add_action( 'wp_ajax_' . $this->get( 'id' ), array( &$this, '_serve_model' ) );
+        add_action( 'wp_ajax_nopriv_' . $this->get( 'id' ), array( &$this, '_serve_model' ) );
 
         // @chainable.
         return $this;
@@ -164,33 +168,33 @@ namespace UsabilityDynamics {
 
         $scope = is_admin() ? 'private' : 'public';
 
-        echo '<script data-scope="' . $scope . '" data-name="' . $this->get( 'name' ) . '" data-main="' . $this->get( '_path' ) . '" src="' . self::$server . '"></script>' . "\n";
+        echo '<script data-scope="' . $scope . '" data-id="' . $this->get( 'id' ) . '" data-main="' . $this->get( '_path' ) . '" src="' . self::$server . '"></script>' . "\n";
 
         return;
 
         // Standard Admin.
-        if( current_filter() == 'admin_print_scripts' && $this->backend ) {
-          echo '<script data-scope="admin" data-name="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+        if( current_filter() == 'admin_print_footer_scripts' && $this->backend ) {
+          echo '<script data-scope="admin" data-id="' . $this->id . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
         }
 
         // Admin Customizer Controls.
         if( current_filter() == 'customize_controls_print_scripts' && $this->customizer ) {
-          echo '<script data-scope="customizer" data-name="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+          echo '<script data-scope="customizer" data-id="' . $this->id . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
         }
 
         // Login Scripts.
         if( current_filter() == 'login_enqueue_scripts' && $this->login ) {
-          echo '<script data-scope="login" data-name="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+          echo '<script data-scope="login" data-id="' . $this->id . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
         }
 
         // Public Frontend.
         if( current_filter() == 'wp_footer' && $this->public ) {
-          echo '<script data-scope="public" data-name="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+          echo '<script data-scope="public" data-id="' . $this->id . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
         }
 
         // Frontned Customization Preview.
         if( current_filter() == 'customize_preview_init' && $this->preview ) {
-          echo '<script data-scope="preview" data-name="' . $this->name . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
+          echo '<script data-scope="preview" data-id="' . $this->id . '" data-main="' . $this->path . '" src="' . $this->server . '"></script>' . "\n";
         }
 
       }
@@ -203,110 +207,56 @@ namespace UsabilityDynamics {
        * @action template_redirect
        * @action admin_init
        */
-      public function _serve_model() {
+      function _serve_model() {
 
-        if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === $this->get( '_path' ) ) {
+        if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === $this->get( '_path' ) ) {}
 
-          // Generate Action Handler.
-          do_action( 'ud:requires', $this );
+        $_action = $_GET[ 'action' ];
 
-          // Instance Action Handler.
-          do_action( 'ud:requires:' . $this->get( 'name' ) );
+        // Generate Action Handler.
+        do_action( 'ud:requires', $this );
 
-          //die( '<pre>' . print_r( $this->get(), true ) . '</pre>' );
+        // Instance Action Handler.
+        do_action( 'ud:requires:' . $this->get( 'id' ) );
 
-          // Set Headers.
-          add_filter( 'nocache_headers', function ( $headers ) {
+        // Set Headers.
+        add_filter( 'nocache_headers', function ( $headers = array() ) {
 
-            if( !$headers ) {
-              $headers = array();
-            }
-
-            $this->set( '_headers', array(
-              'Content-Type'    => 'application/javascript; charset=' . get_bloginfo( 'charset' ),
-              'X-Frame-Options' => 'SAMEORIGIN',
-              'Vary'            => 'Accept-Encoding'
-            ));
-
-            // $headers = apply_filters( 'ud:requires:headers', $headers );
-
-            return $this->get( '_headers' );
-
-          });
-
-          // Standard Headers.
-          nocache_headers();
-
-          // WordPress will try to make it 404.
-          http_response_code( $this->get( 'code', 200 ) );
-
-          $data = apply_filters( 'ud:requires:config', array(
-            'type'    => $this->get( 'type' ),
-            'name'    => $this->get( 'name' ),
-            'context' => $this->get( 'context' ),
-            'baseUrl' => $this->get( 'base' ),
-            'urlArgs' => $this->get( 'args' ),
-            'paths'   => $this->get( 'paths' ),
-            'config'  => $this->get( 'config' ),
-            'data'    => $this->get( 'data' ),
-            'deps'    => $this->get( 'deps' )
+          $this->set( '_headers', array(
+            'Content-Type'    => 'application/javascript; charset=' . get_bloginfo( 'charset' ),
+            'X-Frame-Options' => 'SAMEORIGIN',
+            'Vary'            => 'Accept-Encoding'
           ));
 
-          self::send( array_filter( $data ) );
+          // $headers = apply_filters( 'ud:requires:headers', $headers );
 
-        }
+          return $this->get( '_headers' );
+
+        });
+
+        // Standard Headers.
+        nocache_headers();
+
+        // WordPress will try to make it 404.
+        http_response_code( $this->get( 'code', 200 ) );
+
+        $data = apply_filters( 'ud:requires:config', array(
+          'id'      => $this->get( 'id' ),
+          'type'    => $this->get( 'type' ),
+          'context' => $this->get( 'context' ),
+          'urlArgs' => $this->get( 'args' ),
+          'paths'   => $this->get( 'paths' ),
+          'config'  => $this->get( 'config' ),
+          'data'    => $this->get( 'data' ),
+          'deps'    => $this->get( 'deps' )
+        ));
+
+        self::send( array_filter( $data ) );
 
       }
 
       public static function send( $data ) {
         die( 'define(' . json_encode( $data ) . ');' );
-      }
-
-      /**
-       * Error Handler
-       *
-       * @param $errno
-       * @param $errstr
-       * @param $errfile
-       * @param $errline
-       *
-       * @param $errfile
-       *
-       * @return bool
-       */
-      public static function error_handler( $errno = null, $errstr = '', $errfile = null, $errline = null ) {
-
-        // This error code is not included in error_reporting
-        if( !( error_reporting() & $errno ) ) {
-          return;
-        }
-
-        switch( $errno ) {
-
-          // Fatal
-          case E_ERROR:
-          case E_CORE_ERROR:
-          case E_RECOVERABLE_ERROR:
-          case E_COMPILE_ERROR:
-          case E_USER_ERROR:
-            wp_die( "<h1>Website Temporarily Unavailable</h1><p>We apologize for the inconvenience and will return shortly.</p>" );
-            break;
-
-          // Do Nothing
-          case E_WARNING:
-          case E_USER_NOTICE:
-            return true;
-            break;
-
-          // No Idea.
-          default:
-            return;
-            // wp_die( "<h1>Website Temporarily Unavailable</h1><p>We apologize for the inconvenience and will return shortly.</p>" );
-            break;
-        }
-
-        return true;
-
       }
 
       /**
