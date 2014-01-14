@@ -450,6 +450,10 @@ var requirejs, require, define;
         exports: 'jQuery.ui',
         deps: [ 'jquery', 'async' ]
       },
+      "datatables": {
+        exports: 'datatables',
+        deps: [ 'jquery' ]
+      },
       "backbone": {
         deps: [ "underscore", "jquery" ],
         exports: "Backbone"
@@ -462,6 +466,7 @@ var requirejs, require, define;
     config.paths[ 'async' ] = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
     config.paths[ 'knockout' ] = '//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1';
     config.paths[ 'knockout.mapping' ] = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
+    config.paths[ 'datatables' ] = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min    ';
 
     // UI Library.
     config.paths[ 'udx.ui.jquery.tabs' ] = "//cdn.udx.io/udx.ui.jquery.tabs";
