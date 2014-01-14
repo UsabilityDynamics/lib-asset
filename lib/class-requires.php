@@ -56,7 +56,9 @@ namespace UsabilityDynamics {
        * @todo Add logic to not serve JS until template_redirect action to let JS deps register.
        * @todo Instane / settings should probably be based on scope since only a single requires.js instance can be handled per view.
        *
-       * @param array $_atts
+       * @param array $args
+       *
+       * @internal param array $_atts
        *
        * @internal param array|mixed $args .path
        */
