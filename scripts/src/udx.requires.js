@@ -243,9 +243,9 @@ var requirejs, require, define;
       udx.deepExtend( context.config, {
         "paths": data.paths || {},
         "shim": data.shim || {},
-        "urlArgs": data.urlArgs || {},
+        "urlArgs": data.urlArgs || null,
         "config": data.config || {}
-      } );
+      });
 
       // Add Dependencies.
       each( data.deps || [], function( dep ) {
@@ -460,7 +460,7 @@ var requirejs, require, define;
       },
       "jquery.ui": {
         exports: 'jQuery.ui',
-        deps: [ 'jquery', 'async' ]
+        deps: [ 'jquery' ]
       },
       "datatables": {
         //exports: 'jQuery.dataTable',
@@ -479,6 +479,7 @@ var requirejs, require, define;
     config.paths[ 'knockout' ] = '//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1';
     config.paths[ 'knockout.mapping' ] = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
     config.paths[ 'datatables' ] = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
+    //config.paths[ 'jquery.validation' ] = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
 
     // UI Library.
     config.paths[ 'udx.ui.jquery.tabs' ] = "//cdn.udx.io/udx.ui.jquery.tabs";
@@ -1947,7 +1948,13 @@ var requirejs, require, define;
 
         }
 
-        return config.urlArgs ? url + ((url.indexOf( '?' ) === -1 ? '?' : '&') + config.urlArgs) : url;
+        // Add urlArgs if an object exists.
+        if( config.urlArgs && Object.keys( config.urlArgs ).length ) {
+          url = config.urlArgs ? url + ((url.indexOf( '?' ) === -1 ? '?' : '&') + config.urlArgs) : url;
+        }
+
+        return url;
+
       },
 
       //Delegates to req.load. Broken out as a separate function to

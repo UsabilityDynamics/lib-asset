@@ -87,9 +87,7 @@ namespace UsabilityDynamics {
           ),
 
           // Extra Module Request Arguments.
-          'args'   => array(
-            "token" => "test"
-          ),
+          'args'   => array(),
 
           // HTTP Headers.
           'cache'  => '',
@@ -252,14 +250,16 @@ namespace UsabilityDynamics {
         // WordPress will try to make it 404.
         http_response_code( $this->get( 'code', 200 ) );
 
+        // Model Data.
         $data = apply_filters( 'udx:requires:data', array(
           'id'      => $this->get( 'id' ),
           'type'    => $this->get( 'type' ),
-          'context' => $this->get( 'context' ),
           'data'    => $this->get( 'data' )
         ));
 
+        // AMD Configuration.
         $config = apply_filters( 'udx:requires:config', array(
+          'context' => $this->get( 'context' ),
           'paths'   => $this->get( 'paths' ),
           'deps'    => $this->get( 'deps' ),
           'urlArgs' => $this->get( 'args' ),
