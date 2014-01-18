@@ -880,6 +880,7 @@ var requirejs, require, define;
     config.paths[ 'udx.ui.wp.customizer.script' ]     = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.customizer.script";
 
     // Utility Library.
+    config.paths[ 'udx.utility' ]                     = "//cdn.udx.io/lib-utility/scripts/udx.utility";
     config.paths[ 'udx.utility.md5' ]                 = "//cdn.udx.io/lib-utility/scripts/udx.utility.md5";
     config.paths[ 'udx.utility.facebook.like' ]       = "//cdn.udx.io/lib-utility/scripts/udx.facebook.like";
     config.paths[ 'udx.utility.process' ]             = "//cdn.udx.io/lib-utility/scripts/udx.utility.process";
