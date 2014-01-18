@@ -1,17 +1,23 @@
-/** vim: et:ts=4:sw=4:sts=4
- * @license RequireJS 2.1.9+ Copyright (c) 2010-2012, The Dojo Foundation All Rights Reserved.
- * Available via the MIT or new BSD license.
- * see: http://github.com/jrburke/requirejs for details
+/**
+ * Requires.js
+ *
+ * Includes
+ * * ECMA5 shim - defineProperty, getOwnPropertyDescriptor, etc.
+ * * Object Validation methods - Object.defineSchema(), Object.validateSchema()
+ *
+ * @version 1.0.1
  */
-//Not using strict: uneven strict support in browsers, #392, and causes
-//problems with requirejs.exec()/transpiler plugins that may not be strict.
-/*jslint regexp: true, nomen: true, sloppy: true */
-/*global window, navigator, document, importScripts, setTimeout, opera */
 var requirejs, require, define;
 
 (function( global ) {
 
-  var debugBuild = false; //Set to true if you want to see debug messages in the Console, or false if not.
+  var req, s, head, baseElement, dataMain, src, interactiveScript, currentlyAddingScript, mainScript, subPath, version = '2.1.9+', commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg, cjsRequireRegExp = /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g, jsSuffixRegExp = /\.js$/, currDirRegExp = /^\.\//, op = Object.prototype, ostring = op.toString, hasOwn = op.hasOwnProperty, ap = Array.prototype, apsp = ap.splice, isBrowser = !!(typeof window !== 'undefined' && typeof navigator !== 'undefined' && window.document), isWebWorker = !isBrowser && typeof importScripts !== 'undefined';
+  var readyRegExp = isBrowser && navigator.platform === 'PLAYSTATION 3' ? /^complete$/ : /^(complete|loaded)$/, defContextName = '_';
+  var isOpera = typeof opera !== 'undefined' && opera.toString() === '[object Opera]', contexts = {};
+  var cfg = {};
+  var globalDefQueue = [];
+  var useInteractive = false;
+  var debugBuild = false;
 
   if( window.domReady == undefined ) {
     window.domReady = {};
@@ -108,6 +114,7 @@ var requirejs, require, define;
 
   }
 
+  // UDX Methods.
   var udx = {
     config: {
       loading_class: 'udx-module-loading'
@@ -164,7 +171,7 @@ var requirejs, require, define;
             context.log( element.getAttribute( 'data-requires' ), 'not found.', error );
           } );
 
-        });
+        } );
 
       }
 
@@ -172,13 +179,15 @@ var requirejs, require, define;
       document.domReady = function() {
 
         // @todo Fix ghetto timeout - figure out how to make local models be loaded before libs...
-        window.setTimeout( function() { findTriggers(); }, 2000 )
+        window.setTimeout( function() {
+          findTriggers();
+        }, 2000 )
 
       };
 
     },
     /**
-     * 
+     *
      * @param url
      * @param _callback
      */
@@ -245,7 +254,7 @@ var requirejs, require, define;
         "shim": data.shim || {},
         "urlArgs": data.urlArgs || null,
         "config": data.config || {}
-      });
+      } );
 
       // Add Dependencies.
       each( data.deps || [], function( dep ) {
@@ -258,18 +267,395 @@ var requirejs, require, define;
     }
   };
 
-  var req, s, head, baseElement, dataMain, src, interactiveScript, currentlyAddingScript, mainScript, subPath, version = '2.1.9+', commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg, cjsRequireRegExp = /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g, jsSuffixRegExp = /\.js$/, currDirRegExp = /^\.\//, op = Object.prototype, ostring = op.toString, hasOwn = op.hasOwnProperty, ap = Array.prototype, apsp = ap.splice, isBrowser = !!(typeof window !== 'undefined' && typeof navigator !== 'undefined' && window.document), isWebWorker = !isBrowser && typeof importScripts !== 'undefined', //PS3 indicates loaded and complete, but need to wait for complete
-  //specifically. Sequence is 'loading', 'loaded', execution,
-  // then 'complete'. The UA check is unfortunate, but not sure how
-  //to feature test w/o causing perf issues.
-    readyRegExp = isBrowser && navigator.platform === 'PLAYSTATION 3' ? /^complete$/ : /^(complete|loaded)$/, defContextName = '_', //Oh the tragedy, detecting opera. See the usage of isOpera for reason.
-    isOpera = typeof opera !== 'undefined' && opera.toString() === '[object Opera]', contexts = {}, cfg = {
+  // ECMA5 Shim.
+  var call = Function.prototype.call;
+  var prototypeOfObject = Object.prototype;
+  var owns = call.bind(prototypeOfObject.hasOwnProperty);
 
+  // If JS engine supports accessors creating shortcuts.
+  var defineGetter;
+  var defineSetter;
+  var lookupGetter;
+  var lookupSetter;
+  var supportsAccessors;
 
+  if ((supportsAccessors = owns(prototypeOfObject, "__defineGetter__"))) {
+    defineGetter = call.bind(prototypeOfObject.__defineGetter__);
+    defineSetter = call.bind(prototypeOfObject.__defineSetter__);
+    lookupGetter = call.bind(prototypeOfObject.__lookupGetter__);
+    lookupSetter = call.bind(prototypeOfObject.__lookupSetter__);
+  }
 
-    }, globalDefQueue = [], useInteractive = false;
+  if( !Object.getPrototypeOf ) {
+    Object.getPrototypeOf = function getPrototypeOf( object ) {
+      return object.__proto__ || (
+        object.constructor ? object.constructor.prototype : prototypeOfObject
+        );
+    };
+  }
 
-  // context.log( 'udx', 'loading require.js' );
+  function doesGetOwnPropertyDescriptorWork( object ) {
+    try {
+      object.sentinel = 0;
+      return Object.getOwnPropertyDescriptor( object, "sentinel" ).value === 0;
+    } catch( exception ) {
+      // returns falsy
+    }
+  }
+
+  if( Object.defineProperty ) {
+    var getOwnPropertyDescriptorWorksOnObject = doesGetOwnPropertyDescriptorWork( {} );
+    var getOwnPropertyDescriptorWorksOnDom = typeof document == "undefined" || doesGetOwnPropertyDescriptorWork( document.createElement( "div" ) );
+    if( !getOwnPropertyDescriptorWorksOnDom || !getOwnPropertyDescriptorWorksOnObject ) {
+      var getOwnPropertyDescriptorFallback = Object.getOwnPropertyDescriptor;
+    }
+  }
+
+  if( !Object.getOwnPropertyDescriptor || getOwnPropertyDescriptorFallback ) {
+    var ERR_NON_OBJECT = "Object.getOwnPropertyDescriptor called on a non-object: ";
+
+    Object.getOwnPropertyDescriptor = function getOwnPropertyDescriptor( object, property ) {
+      if( (typeof object != "object" && typeof object != "function") || object === null ) {
+        throw new TypeError( ERR_NON_OBJECT + object );
+      }
+
+      // make a valiant attempt to use the real getOwnPropertyDescriptor
+      // for I8's DOM elements.
+      if( getOwnPropertyDescriptorFallback ) {
+        try {
+          return getOwnPropertyDescriptorFallback.call( Object, object, property );
+        } catch( exception ) {
+          // try the shim if the real one doesn't work
+        }
+      }
+
+      // If object does not owns property return undefined immediately.
+      if( !owns( object, property ) ) {
+        return;
+      }
+
+      // If object has a property then it's for sure both `enumerable` and
+      // `configurable`.
+      var descriptor = { enumerable: true, configurable: true };
+
+      // If JS engine supports accessor properties then property may be a
+      // getter or setter.
+      if( supportsAccessors ) {
+        // Unfortunately `__lookupGetter__` will return a getter even
+        // if object has own non getter property along with a same named
+        // inherited getter. To avoid misbehavior we temporary remove
+        // `__proto__` so that `__lookupGetter__` will return getter only
+        // if it's owned by an object.
+        var prototype = object.__proto__;
+        object.__proto__ = prototypeOfObject;
+
+        var getter = lookupGetter( object, property );
+        var setter = lookupSetter( object, property );
+
+        // Once we have getter and setter we can put values back.
+        object.__proto__ = prototype;
+
+        if( getter || setter ) {
+          if( getter ) {
+            descriptor.get = getter;
+          }
+          if( setter ) {
+            descriptor.set = setter;
+          }
+          // If it was accessor property we're done and return here
+          // in order to avoid adding `value` to the descriptor.
+          return descriptor;
+        }
+      }
+
+      // If we got this far we know that object has an own property that is
+      // not an accessor so we set it as a value and return descriptor.
+      descriptor.value = object[property];
+      descriptor.writable = true;
+      return descriptor;
+    };
+  }
+
+  if( !Object.getOwnPropertyNames ) {
+    Object.getOwnPropertyNames = function getOwnPropertyNames( object ) {
+      return Object.keys( object );
+    };
+  }
+
+  if( !Object.create ) {
+
+    // Contributed by Brandon Benvie, October, 2012
+    var createEmpty;
+    var supportsProto = Object.prototype.__proto__ === null;
+    if( supportsProto || typeof document == 'undefined' ) {
+      createEmpty = function() {
+        return { "__proto__": null };
+      };
+    } else {
+      // In old IE __proto__ can't be used to manually set `null`, nor does
+      // any other method exist to make an object that inherits from nothing,
+      // aside from Object.prototype itself. Instead, create a new global
+      // object and *steal* its Object.prototype and strip it bare. This is
+      // used as the prototype to create nullary objects.
+      createEmpty = function() {
+        var iframe = document.createElement( 'iframe' );
+        var parent = document.body || document.documentElement;
+        iframe.style.display = 'none';
+        parent.appendChild( iframe );
+        iframe.src = 'javascript:';
+        var empty = iframe.contentWindow.Object.prototype;
+        parent.removeChild( iframe );
+        iframe = null;
+        delete empty.constructor;
+        delete empty.hasOwnProperty;
+        delete empty.propertyIsEnumerable;
+        delete empty.isPrototypeOf;
+        delete empty.toLocaleString;
+        delete empty.toString;
+        delete empty.valueOf;
+        empty.__proto__ = null;
+
+        function Empty() {
+        }
+
+        Empty.prototype = empty;
+        // short-circuit future calls
+        createEmpty = function() {
+          return new Empty();
+        };
+        return new Empty();
+      };
+    }
+
+    Object.create = function create( prototype, properties ) {
+
+      var object;
+
+      function Type() {
+      }  // An empty constructor.
+
+      if( prototype === null ) {
+        object = createEmpty();
+      } else {
+        if( typeof prototype !== "object" && typeof prototype !== "function" ) {
+          // In the native implementation `parent` can be `null`
+          // OR *any* `instanceof Object`  (Object|Function|Array|RegExp|etc)
+          // Use `typeof` tho, b/c in old IE, DOM elements are not `instanceof Object`
+          // like they are in modern browsers. Using `Object.create` on DOM elements
+          // is...err...probably inappropriate, but the native version allows for it.
+          throw new TypeError( "Object prototype may only be an Object or null" ); // same msg as Chrome
+        }
+        Type.prototype = prototype;
+        object = new Type();
+        // IE has no built-in implementation of `Object.getPrototypeOf`
+        // neither `__proto__`, but this manually setting `__proto__` will
+        // guarantee that `Object.getPrototypeOf` will work as expected with
+        // objects created using `Object.create`
+        object.__proto__ = prototype;
+      }
+
+      if( properties !== void 0 ) {
+        Object.defineProperties( object, properties );
+      }
+
+      return object;
+    };
+  }
+
+  function doesDefinePropertyWork( object ) {
+    try {
+      Object.defineProperty( object, "sentinel", {} );
+      return "sentinel" in object;
+    } catch( exception ) {
+      // returns falsy
+    }
+  }
+
+  if( Object.defineProperty ) {
+    var definePropertyWorksOnObject = doesDefinePropertyWork( {} );
+    var definePropertyWorksOnDom = typeof document == "undefined" || doesDefinePropertyWork( document.createElement( "div" ) );
+    if( !definePropertyWorksOnObject || !definePropertyWorksOnDom ) {
+      var definePropertyFallback = Object.defineProperty, definePropertiesFallback = Object.defineProperties;
+    }
+  }
+
+  if( !Object.defineProperty || definePropertyFallback ) {
+    var ERR_NON_OBJECT_DESCRIPTOR = "Property description must be an object: ";
+    var ERR_NON_OBJECT_TARGET = "Object.defineProperty called on non-object: "
+    var ERR_ACCESSORS_NOT_SUPPORTED = "getters & setters can not be defined " + "on this javascript engine";
+
+    Object.defineProperty = function defineProperty( object, property, descriptor ) {
+      if( (typeof object != "object" && typeof object != "function") || object === null ) {
+        throw new TypeError( ERR_NON_OBJECT_TARGET + object );
+      }
+      if( (typeof descriptor != "object" && typeof descriptor != "function") || descriptor === null ) {
+        throw new TypeError( ERR_NON_OBJECT_DESCRIPTOR + descriptor );
+      }
+      // make a valiant attempt to use the real defineProperty
+      // for I8's DOM elements.
+      if( definePropertyFallback ) {
+        try {
+          return definePropertyFallback.call( Object, object, property, descriptor );
+        } catch( exception ) {
+          // try the shim if the real one doesn't work
+        }
+      }
+
+      // If it's a data property.
+      if( owns( descriptor, "value" ) ) {
+        // fail silently if "writable", "enumerable", or "configurable"
+        // are requested but not supported
+        /*
+         // alternate approach:
+         if ( // can't implement these features; allow false but not true
+         !(owns(descriptor, "writable") ? descriptor.writable : true) ||
+         !(owns(descriptor, "enumerable") ? descriptor.enumerable : true) ||
+         !(owns(descriptor, "configurable") ? descriptor.configurable : true)
+         )
+         throw new RangeError(
+         "This implementation of Object.defineProperty does not " +
+         "support configurable, enumerable, or writable."
+         );
+         */
+
+        if( supportsAccessors && (lookupGetter( object, property ) || lookupSetter( object, property )) ) {
+          // As accessors are supported only on engines implementing
+          // `__proto__` we can safely override `__proto__` while defining
+          // a property to make sure that we don't hit an inherited
+          // accessor.
+          var prototype = object.__proto__;
+          object.__proto__ = prototypeOfObject;
+          // Deleting a property anyway since getter / setter may be
+          // defined on object itself.
+          delete object[property];
+          object[property] = descriptor.value;
+          // Setting original `__proto__` back now.
+          object.__proto__ = prototype;
+        } else {
+          object[property] = descriptor.value;
+        }
+      } else {
+        if( !supportsAccessors ) {
+          throw new TypeError( ERR_ACCESSORS_NOT_SUPPORTED );
+        }
+        // If we got that far then getters and setters can be defined !!
+        if( owns( descriptor, "get" ) ) {
+          defineGetter( object, property, descriptor.get );
+        }
+        if( owns( descriptor, "set" ) ) {
+          defineSetter( object, property, descriptor.set );
+        }
+      }
+      return object;
+    };
+  }
+
+  if( !Object.defineProperties || definePropertiesFallback ) {
+    Object.defineProperties = function defineProperties( object, properties ) {
+      // make a valiant attempt to use the real defineProperties
+      if( definePropertiesFallback ) {
+        try {
+          return definePropertiesFallback.call( Object, object, properties );
+        } catch( exception ) {
+          // try the shim if the real one doesn't work
+        }
+      }
+
+      for( var property in properties ) {
+        if( owns( properties, property ) && property != "__proto__" ) {
+          Object.defineProperty( object, property, properties[property] );
+        }
+      }
+      return object;
+    };
+  }
+
+  if( !Object.seal ) {
+    Object.seal = function seal( object ) {
+      // this is misleading and breaks feature-detection, but
+      // allows "securable" code to "gracefully" degrade to working
+      // but insecure code.
+      return object;
+    };
+  }
+
+  if( !Object.freeze ) {
+    Object.freeze = function freeze( object ) {
+      // this is misleading and breaks feature-detection, but
+      // allows "securable" code to "gracefully" degrade to working
+      // but insecure code.
+      return object;
+    };
+  }
+
+  try {
+    Object.freeze( function() {
+    } );
+  } catch( exception ) {
+    Object.freeze = (function freeze( freezeObject ) {
+      return function freeze( object ) {
+        if( typeof object == "function" ) {
+          return object;
+        } else {
+          return freezeObject( object );
+        }
+      };
+    })( Object.freeze );
+  }
+
+  if( !Object.preventExtensions ) {
+    Object.preventExtensions = function preventExtensions( object ) {
+      // this is misleading and breaks feature-detection, but
+      // allows "securable" code to "gracefully" degrade to working
+      // but insecure code.
+      return object;
+    };
+  }
+
+  if( !Object.isSealed ) {
+    Object.isSealed = function isSealed( object ) {
+      return false;
+    };
+  }
+
+  if( !Object.isFrozen ) {
+    Object.isFrozen = function isFrozen( object ) {
+      return false;
+    };
+  }
+
+  if( !Object.isExtensible ) {
+    Object.isExtensible = function isExtensible( object ) {
+      // 1. If Type(O) is not Object throw a TypeError exception.
+      if( Object( object ) !== object ) {
+        throw new TypeError(); // TODO message
+      }
+      // 2. Return the Boolean value of the [[Extensible]] internal property of O.
+      var name = '';
+      while( owns( object, name ) ) {
+        name += '?';
+      }
+      object[name] = true;
+      var returnValue = owns( object, name );
+      delete object[name];
+      return returnValue;
+    };
+  }
+
+  // Object Schema.
+  if( !Object.defineSchema ) {
+    Object.defineSchema  = function defineSchema( object, schema ) {
+      console.log( 'not implemented' );
+    };
+  }
+
+  // Object Schema Validation.
+  if( !Object.validateSchema ) {
+    Object.validateSchema  = function validateSchema() {
+      console.log( 'not implemented' );
+    };
+  }
+
 
   function isFunction( it ) {
     return ostring.call( it ) === '[object Function]';
@@ -462,6 +848,10 @@ var requirejs, require, define;
         exports: 'jQuery.ui',
         deps: [ 'jquery' ]
       },
+      "jquery.validation": {
+        exports: 'jQuery.validation',
+        deps: [ 'jquery' ]
+      },
       "datatables": {
         //exports: 'jQuery.dataTable',
         deps: [ 'jquery' ]
@@ -473,27 +863,34 @@ var requirejs, require, define;
     };
 
     // Vendor.
-    config.paths[ 'jquery' ] = "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min";
-    config.paths[ 'jquery.ui' ] = "//code.jquery.com/ui/1.10.3/jquery-ui";
-    config.paths[ 'async' ] = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
-    config.paths[ 'knockout' ] = '//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1';
-    config.paths[ 'knockout.mapping' ] = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
-    config.paths[ 'datatables' ] = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
-    //config.paths[ 'jquery.validation' ] = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
+    config.paths[ 'jquery' ]                          = "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min";
+    config.paths[ 'jquery.ui' ]                       = "//code.jquery.com/ui/1.10.3/jquery-ui";
+    config.paths[ 'async' ]                           = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
+    config.paths[ 'knockout' ]                        = '//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1';
+    config.paths[ 'knockout.mapping' ]                = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
+    config.paths[ 'datatables' ]                      = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
+    config.paths[ 'jquery.validation' ]               = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
 
     // UI Library.
-    config.paths[ 'udx.ui.jquery.tabs' ] = "//cdn.udx.io/udx.ui.jquery.tabs";
-    config.paths[ 'udx.ui.wp.editor.script' ] = "//cdn.udx.io/udx.ui.wp.editor.script";
-    config.paths[ 'udx.ui.wp.editor.style' ] = "//cdn.udx.io/udx.ui.wp.editor.style";
-    config.paths[ 'udx.ui.wp.customizer.style' ] = "//cdn.udx.io/udx.ui.wp.customizer.style";
-    config.paths[ 'udx.ui.wp.customizer.script' ] = "//cdn.udx.io/udx.ui.wp.customizer.script";
+    config.paths[ 'udx.ui.jquery.tabs' ]              = "//cdn.udx.io/lib-ui/scripts/udx.ui.jquery.tabs";
+    config.paths[ 'udx.ui.dynamic-table' ]            = "//cdn.udx.io/lib-ui/scripts/udx.ui.dynamic-table";
+    config.paths[ 'udx.ui.wp.editor.script' ]         = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.editor.script";
+    config.paths[ 'udx.ui.wp.editor.style' ]          = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.editor.style";
+    config.paths[ 'udx.ui.wp.customizer.style' ]      = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.customizer.style";
+    config.paths[ 'udx.ui.wp.customizer.script' ]     = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.customizer.script";
 
     // Utility Library.
-    config.paths[ 'udx.utility.facebook.like' ] = "//cdn.udx.io/udx.utility.facebook.like";
-    config.paths[ 'udx.utility.md5' ] = "//cdn.udx.io/udx.utility.md5";
+    config.paths[ 'udx.utility.md5' ]                 = "//cdn.udx.io/lib-utility/scripts/udx.utility.md5";
+    config.paths[ 'udx.utility.facebook.like' ]       = "//cdn.udx.io/lib-utility/scripts/udx.facebook.like";
+    config.paths[ 'udx.utility.process' ]             = "//cdn.udx.io/lib-utility/scripts/udx.utility.process";
+    config.paths[ 'udx.utility.job' ]                 = "//cdn.udx.io/lib-utility/scripts/udx.utility.job";
 
     // Settings Library.
-    config.paths[ 'udx.settings' ] = "//cdn.udx.io/udx.settings";
+    config.paths[ 'udx.settings' ]                    = "//cdn.udx.io/lib-settings/scripts/udx.settings.job";
+
+    // WP-Property: Importer
+    config.paths[ 'wpp.importer.overview' ]           = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.overview";
+    config.paths[ 'wpp.importer.editor' ]             = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.editor";
 
     /**
      * Trims the . and .. from an array of path segments.
@@ -631,6 +1028,11 @@ var requirejs, require, define;
       return name;
     }
 
+    /**
+     * Remove Script
+     *
+     * @param name
+     */
     function removeScript( name ) {
       if( isBrowser ) {
         each( scripts(), function( scriptNode ) {
@@ -642,6 +1044,12 @@ var requirejs, require, define;
       }
     }
 
+    /**
+     * Has Path Fallback
+     *
+     * @param id
+     * @returns {boolean}
+     */
     function hasPathFallback( id ) {
       var pathConfig = getOwn( config.paths, id );
       if( pathConfig && isArray( pathConfig ) && pathConfig.length > 1 ) {

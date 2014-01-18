@@ -19,11 +19,8 @@
     }
   ],
   "autoload": {
-    "classmap": [
-      "lib"
-    ]
+    "classmap": [ "lib" ]
   },
-  "homepage": "http://github.com/usabilitydynamics/lib-requires",
   "authors": [
     {
       "name": "Andy Potanin",
@@ -44,8 +41,13 @@
       "role": "Developer"
     }
   ],
-  "support": {
-    "issues": "https://github.com/usabilitydynamics/lib-requires/issues"
+  "extra": {
+    "component": {
+      "scripts": [
+        "scripts/udx.requires.js",
+        "scripts/udx.requires.asset.js"
+      ]
+    }
   },
   "license": "MIT"
 }
