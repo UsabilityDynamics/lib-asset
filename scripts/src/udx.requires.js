@@ -886,6 +886,10 @@ var requirejs, require, define;
     config.paths[ 'udx.utility.process' ]             = "//cdn.udx.io/lib-utility/scripts/udx.utility.process";
     config.paths[ 'udx.utility.job' ]                 = "//cdn.udx.io/lib-utility/scripts/udx.utility.job";
 
+    // Model Library.
+    config.paths[ 'udx.model' ]                       = "//cdn.udx.io/lib-model/scripts/udx.model";
+    config.paths[ 'udx.model.validation' ]            = "//cdn.udx.io/lib-model/scripts/udx.model.validation";
+
     // Settings Library.
     config.paths[ 'udx.settings' ]                    = "//cdn.udx.io/lib-settings/scripts/udx.settings.job";
 
