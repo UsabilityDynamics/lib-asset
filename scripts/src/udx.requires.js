@@ -884,6 +884,7 @@ var requirejs, require, define;
     config.paths[ 'udx.utility.md5' ]                 = "//cdn.udx.io/lib-utility/scripts/udx.utility.md5";
     config.paths[ 'udx.utility.facebook.like' ]       = "//cdn.udx.io/lib-utility/scripts/udx.facebook.like";
     config.paths[ 'udx.utility.process' ]             = "//cdn.udx.io/lib-utility/scripts/udx.utility.process";
+    config.paths[ 'udx.utility.activity' ]            = "//cdn.udx.io/lib-utility/scripts/udx.utility.activity";
     config.paths[ 'udx.utility.job' ]                 = "//cdn.udx.io/lib-utility/scripts/udx.utility.job";
 
     // Model Library.
