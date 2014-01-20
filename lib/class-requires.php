@@ -70,7 +70,7 @@ namespace UsabilityDynamics {
           'id'        => 'main',
           'type'      => 'model',
           'context'   => '_',
-          'path'      => admin_url( 'admin-ajax.php?action=' . isset( $args[ 'id' ] ) ? $args[ 'id' ] : 'main' ),
+          'path'      => admin_url( 'admin-ajax.php?action=' . ( isset( $args[ 'id' ] ) ? $args[ 'id' ] : 'main' ) ),
           'rewrite'   => null,
 
           'base'      => null,
