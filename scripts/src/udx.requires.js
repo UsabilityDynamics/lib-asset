@@ -897,6 +897,7 @@ var requirejs, require, define;
     // WP-Property: Importer
     config.paths[ 'wpp.importer.overview' ]           = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.overview";
     config.paths[ 'wpp.importer.editor' ]             = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.editor";
+    config.paths[ 'wpp.importer.rets' ]               = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.rets";
 
     /**
      * Trims the . and .. from an array of path segments.
