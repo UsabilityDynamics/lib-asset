@@ -872,32 +872,33 @@ var requirejs, require, define;
     config.paths[ 'jquery.validation' ]               = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
 
     // UI Library.
-    config.paths[ 'udx.ui.jquery.tabs' ]              = "//cdn.udx.io/lib-ui/scripts/udx.ui.jquery.tabs";
-    config.paths[ 'udx.ui.dynamic-table' ]            = "//cdn.udx.io/lib-ui/scripts/udx.ui.dynamic-table";
-    config.paths[ 'udx.ui.wp.editor.script' ]         = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.editor.script";
-    config.paths[ 'udx.ui.wp.editor.style' ]          = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.editor.style";
-    config.paths[ 'udx.ui.wp.customizer.style' ]      = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.customizer.style";
-    config.paths[ 'udx.ui.wp.customizer.script' ]     = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.customizer.script";
+    config.paths[ 'udx.ui.jquery.tabs' ]              = "//cdn.udx.io/lib/udx.ui.jquery.tabs";
+    config.paths[ 'udx.ui.sticky-header' ]            = "//cdn.udx.io/lib/udx.ui.sticky-header";
+    config.paths[ 'udx.ui.dynamic-table' ]            = "//cdn.udx.io/lib/udx.ui.dynamic-table";
+    config.paths[ 'udx.ui.wp.editor.script' ]         = "//cdn.udx.io/lib/udx.ui.wp.editor.script";
+    config.paths[ 'udx.ui.wp.editor.style' ]          = "//cdn.udx.io/lib/udx.ui.wp.editor.style";
+    config.paths[ 'udx.ui.wp.customizer.style' ]      = "//cdn.udx.io/lib/udx.ui.wp.customizer.style";
+    config.paths[ 'udx.ui.wp.customizer.script' ]     = "//cdn.udx.io/lib/udx.ui.wp.customizer.script";
 
     // Utility Library.
-    config.paths[ 'udx.utility' ]                     = "//cdn.udx.io/lib-utility/scripts/udx.utility";
-    config.paths[ 'udx.utility.md5' ]                 = "//cdn.udx.io/lib-utility/scripts/udx.utility.md5";
-    config.paths[ 'udx.utility.facebook.like' ]       = "//cdn.udx.io/lib-utility/scripts/udx.facebook.like";
-    config.paths[ 'udx.utility.process' ]             = "//cdn.udx.io/lib-utility/scripts/udx.utility.process";
-    config.paths[ 'udx.utility.activity' ]            = "//cdn.udx.io/lib-utility/scripts/udx.utility.activity";
-    config.paths[ 'udx.utility.job' ]                 = "//cdn.udx.io/lib-utility/scripts/udx.utility.job";
+    config.paths[ 'udx.utility' ]                     = "//cdn.udx.io/lib/udx.utility";
+    config.paths[ 'udx.utility.md5' ]                 = "//cdn.udx.io/lib/udx.utility.md5";
+    config.paths[ 'udx.utility.facebook.like' ]       = "//cdn.udx.io/lib/udx.facebook.like";
+    config.paths[ 'udx.utility.process' ]             = "//cdn.udx.io/lib/udx.utility.process";
+    config.paths[ 'udx.utility.activity' ]            = "//cdn.udx.io/lib/udx.utility.activity";
+    config.paths[ 'udx.utility.job' ]                 = "//cdn.udx.io/lib/udx.utility.job";
 
     // Model Library.
-    config.paths[ 'udx.model' ]                       = "//cdn.udx.io/lib-model/scripts/udx.model";
-    config.paths[ 'udx.model.validation' ]            = "//cdn.udx.io/lib-model/scripts/udx.model.validation";
+    config.paths[ 'udx.model' ]                       = "//cdn.udx.io/lib/udx.model";
+    config.paths[ 'udx.model.validation' ]            = "//cdn.udx.io/lib/udx.model.validation";
 
     // Settings Library.
-    config.paths[ 'udx.settings' ]                    = "//cdn.udx.io/lib-settings/scripts/udx.settings.job";
+    config.paths[ 'udx.settings' ]                    = "//cdn.udx.io/lib/udx.settings.job";
 
     // WP-Property: Importer
-    config.paths[ 'wpp.importer.overview' ]           = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.overview";
-    config.paths[ 'wpp.importer.editor' ]             = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.editor";
-    config.paths[ 'wpp.importer.rets' ]               = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.rets";
+    config.paths[ 'wpp.importer.overview' ]           = "//cdn.udx.io/lib/wpp.importer.overview";
+    config.paths[ 'wpp.importer.editor' ]             = "//cdn.udx.io/lib/wpp.importer.editor";
+    config.paths[ 'wpp.importer.rets' ]               = "//cdn.udx.io/lib/wpp.importer.rets";
 
     /**
      * Trims the . and .. from an array of path segments.
