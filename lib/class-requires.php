@@ -70,7 +70,7 @@ namespace UsabilityDynamics {
           'id'      => 'main',
           'type'    => 'model',
           'context' => '_',
-          'path'    => admin_url( 'admin-ajax.php?action=' . ( isset( $args[ 'id' ] ) ? $args[ 'id' ] : 'main' ) ),
+          'path'    => admin_url( 'admin-ajax.php' ),
           'rewrite' => null,
 
           'base'    => null,
@@ -93,7 +93,9 @@ namespace UsabilityDynamics {
           'cache'   => '',
           'vary'    => '',
           'code'    => 200
-        ) );
+        ));
+
+        $args->path = $args->path . '?action=' . ( isset( $args->id ) ? $args->id : 'main' );
 
         // Create Stateless Settings.
         $this->_settings = new Settings( array(
@@ -108,7 +110,7 @@ namespace UsabilityDynamics {
         $this->set( '_path', ( $args->path ? $args->path : '/scripts/' . $this->id . '.js' ) );
 
         // Bind Actions.
-        add_action( 'wp_header', array( &$this, 'render_tag' ), 100 );
+        add_action( 'wp_head', array( &$this, 'render_tag' ), 100 );
         add_action( 'admin_print_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
@@ -210,16 +212,14 @@ namespace UsabilityDynamics {
       /**
        * Serve Scripts.
        *
+       * /admin-ajax.php?action=my.model
+       *
        * @todo add html_entity_decode() for data strings.
        *
        * @action template_redirect
        * @action admin_init
        */
       function _serve_model() {
-
-        // if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === $this->get( '_path' ) ) {}
-
-        // $_action = $_GET[ 'action' ];
 
         // Generate Action Handler.
         do_action( 'udx:requires', $this );
