@@ -863,6 +863,7 @@ var requirejs, require, define;
     };
 
     // Vendor.
+    config.paths[ 'boostrap' ]                        = "//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min";
     config.paths[ 'jquery' ]                          = "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min";
     config.paths[ 'jquery.ui' ]                       = "//code.jquery.com/ui/1.10.3/jquery-ui";
     config.paths[ 'async' ]                           = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
