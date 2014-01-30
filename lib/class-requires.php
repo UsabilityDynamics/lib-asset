@@ -67,7 +67,7 @@ namespace UsabilityDynamics {
         }
 
         $args = self::parse_args( $args, array(
-          'id'      => 'main',
+          'id'      => null,
           'type'    => 'model',
           'context' => '_',
           'path'    => admin_url( 'admin-ajax.php' ),
@@ -94,6 +94,10 @@ namespace UsabilityDynamics {
           'vary'    => '',
           'code'    => 200
         ));
+        
+        if( !$args->id ) {
+          return;
+        }
 
         $args->path = $args->path . '?action=' . ( isset( $args->id ) ? $args->id : 'main' );
 
