@@ -234,23 +234,18 @@ namespace UsabilityDynamics {
         // Set Headers.
         add_filter( 'nocache_headers', function ( $headers = array() ) {
 
-          $this->set( '_headers', array(
+          $headers = apply_filters( 'udx:requires:headers', array(
             'Content-Type'    => 'application/javascript; charset=' . get_bloginfo( 'charset' ),
             'X-Frame-Options' => 'SAMEORIGIN',
             'Vary'            => 'Accept-Encoding'
-          ) );
+          ));
 
-          $headers = apply_filters( 'udx:requires:headers', $headers );
-
-          return $this->get( '_headers' );
+          return $headers;
 
         } );
 
         // Standard Headers.
         nocache_headers();
-
-        // WordPress will try to make it 404.
-        http_response_code( $this->get( 'code', 200 ) );
 
         // Model Data.
         $data = apply_filters( 'udx:requires:data', array(
@@ -258,6 +253,7 @@ namespace UsabilityDynamics {
           'type' => $this->get( 'type' ),
           'data' => $this->get( 'data' )
         ) );
+
 
         // AMD Configuration.
         $config = apply_filters( 'udx:requires:config', array(
