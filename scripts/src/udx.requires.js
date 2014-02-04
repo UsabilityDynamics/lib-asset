@@ -114,6 +114,21 @@ var requirejs, require, define;
 
   }
 
+  function loadStyle( url, async, callback, args ) {
+    // console.log( 'loadStyle', url );
+
+    window.setTimeout( function() {
+
+      var link = document.createElement( "link" );
+      link.type = "text/css";
+      link.rel = "stylesheet";
+      link.href = url;
+      document.getElementsByTagName( "head" )[0].appendChild( link );
+
+    }, 0 )
+
+  }
+
   // UDX Methods.
   var udx = {
     config: {
@@ -270,7 +285,7 @@ var requirejs, require, define;
   // ECMA5 Shim.
   var call = Function.prototype.call;
   var prototypeOfObject = Object.prototype;
-  var owns = call.bind(prototypeOfObject.hasOwnProperty);
+  var owns = call.bind( prototypeOfObject.hasOwnProperty );
 
   // If JS engine supports accessors creating shortcuts.
   var defineGetter;
@@ -279,11 +294,11 @@ var requirejs, require, define;
   var lookupSetter;
   var supportsAccessors;
 
-  if ((supportsAccessors = owns(prototypeOfObject, "__defineGetter__"))) {
-    defineGetter = call.bind(prototypeOfObject.__defineGetter__);
-    defineSetter = call.bind(prototypeOfObject.__defineSetter__);
-    lookupGetter = call.bind(prototypeOfObject.__lookupGetter__);
-    lookupSetter = call.bind(prototypeOfObject.__lookupSetter__);
+  if( (supportsAccessors = owns( prototypeOfObject, "__defineGetter__" )) ) {
+    defineGetter = call.bind( prototypeOfObject.__defineGetter__ );
+    defineSetter = call.bind( prototypeOfObject.__defineSetter__ );
+    lookupGetter = call.bind( prototypeOfObject.__lookupGetter__ );
+    lookupSetter = call.bind( prototypeOfObject.__lookupSetter__ );
   }
 
   if( !Object.getPrototypeOf ) {
@@ -644,18 +659,17 @@ var requirejs, require, define;
 
   // Object Schema.
   if( !Object.defineSchema ) {
-    Object.defineSchema  = function defineSchema( object, schema ) {
+    Object.defineSchema = function defineSchema( object, schema ) {
       console.log( 'not implemented' );
     };
   }
 
   // Object Schema Validation.
   if( !Object.validateSchema ) {
-    Object.validateSchema  = function validateSchema() {
+    Object.validateSchema = function validateSchema() {
       console.log( 'not implemented' );
     };
   }
-
 
   function isFunction( it ) {
     return ostring.call( it ) === '[object Function]';
@@ -863,41 +877,41 @@ var requirejs, require, define;
     };
 
     // Vendor.
-    config.paths[ 'jquery' ]                          = "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min";
-    config.paths[ 'jquery.ui' ]                       = "//code.jquery.com/ui/1.10.3/jquery-ui";
-    config.paths[ 'async' ]                           = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
-    config.paths[ 'knockout' ]                        = '//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1';
-    config.paths[ 'knockout.mapping' ]                = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
-    config.paths[ 'datatables' ]                      = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
-    config.paths[ 'jquery.validation' ]               = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
+    config.paths[ 'jquery' ] = "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min";
+    config.paths[ 'jquery.ui' ] = "//code.jquery.com/ui/1.10.3/jquery-ui";
+    config.paths[ 'async' ] = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
+    config.paths[ 'knockout' ] = '//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1';
+    config.paths[ 'knockout.mapping' ] = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
+    config.paths[ 'datatables' ] = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
+    config.paths[ 'jquery.validation' ] = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
 
     // UI Library.
-    config.paths[ 'udx.ui.jquery.tabs' ]              = "//cdn.udx.io/lib-ui/scripts/udx.ui.jquery.tabs";
-    config.paths[ 'udx.ui.dynamic-table' ]            = "//cdn.udx.io/lib-ui/scripts/udx.ui.dynamic-table";
-    config.paths[ 'udx.ui.wp.editor.script' ]         = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.editor.script";
-    config.paths[ 'udx.ui.wp.editor.style' ]          = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.editor.style";
-    config.paths[ 'udx.ui.wp.customizer.style' ]      = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.customizer.style";
-    config.paths[ 'udx.ui.wp.customizer.script' ]     = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.customizer.script";
+    config.paths[ 'udx.ui.jquery.tabs' ] = "//cdn.udx.io/lib-ui/scripts/udx.ui.jquery.tabs";
+    config.paths[ 'udx.ui.dynamic-table' ] = "//cdn.udx.io/lib-ui/scripts/udx.ui.dynamic-table";
+    config.paths[ 'udx.ui.wp.editor.script' ] = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.editor.script";
+    config.paths[ 'udx.ui.wp.editor.style' ] = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.editor.style";
+    config.paths[ 'udx.ui.wp.customizer.style' ] = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.customizer.style";
+    config.paths[ 'udx.ui.wp.customizer.script' ] = "//cdn.udx.io/lib-ui/scripts/udx.ui.wp.customizer.script";
 
     // Utility Library.
-    config.paths[ 'udx.utility' ]                     = "//cdn.udx.io/lib-utility/scripts/udx.utility";
-    config.paths[ 'udx.utility.md5' ]                 = "//cdn.udx.io/lib-utility/scripts/udx.utility.md5";
-    config.paths[ 'udx.utility.facebook.like' ]       = "//cdn.udx.io/lib-utility/scripts/udx.facebook.like";
-    config.paths[ 'udx.utility.process' ]             = "//cdn.udx.io/lib-utility/scripts/udx.utility.process";
-    config.paths[ 'udx.utility.activity' ]            = "//cdn.udx.io/lib-utility/scripts/udx.utility.activity";
-    config.paths[ 'udx.utility.job' ]                 = "//cdn.udx.io/lib-utility/scripts/udx.utility.job";
+    config.paths[ 'udx.utility' ] = "//cdn.udx.io/lib-utility/scripts/udx.utility";
+    config.paths[ 'udx.utility.md5' ] = "//cdn.udx.io/lib-utility/scripts/udx.utility.md5";
+    config.paths[ 'udx.utility.facebook.like' ] = "//cdn.udx.io/lib-utility/scripts/udx.facebook.like";
+    config.paths[ 'udx.utility.process' ] = "//cdn.udx.io/lib-utility/scripts/udx.utility.process";
+    config.paths[ 'udx.utility.activity' ] = "//cdn.udx.io/lib-utility/scripts/udx.utility.activity";
+    config.paths[ 'udx.utility.job' ] = "//cdn.udx.io/lib-utility/scripts/udx.utility.job";
 
     // Model Library.
-    config.paths[ 'udx.model' ]                       = "//cdn.udx.io/lib-model/scripts/udx.model";
-    config.paths[ 'udx.model.validation' ]            = "//cdn.udx.io/lib-model/scripts/udx.model.validation";
+    config.paths[ 'udx.model' ] = "//cdn.udx.io/lib-model/scripts/udx.model";
+    config.paths[ 'udx.model.validation' ] = "//cdn.udx.io/lib-model/scripts/udx.model.validation";
 
     // Settings Library.
-    config.paths[ 'udx.settings' ]                    = "//cdn.udx.io/lib-settings/scripts/udx.settings.job";
+    config.paths[ 'udx.settings' ] = "//cdn.udx.io/lib-settings/scripts/udx.settings.job";
 
     // WP-Property: Importer
-    config.paths[ 'wpp.importer.overview' ]           = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.overview";
-    config.paths[ 'wpp.importer.editor' ]             = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.editor";
-    config.paths[ 'wpp.importer.rets' ]               = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.rets";
+    config.paths[ 'wpp.importer.overview' ] = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.overview";
+    config.paths[ 'wpp.importer.editor' ] = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.editor";
+    config.paths[ 'wpp.importer.rets' ] = "//cdn.udx.io/wp-property-importer/scripts/wpp.importer.rets";
 
     /**
      * Trims the . and .. from an array of path segments.
@@ -2491,6 +2505,8 @@ var requirejs, require, define;
     return context.require( deps, callback, errback );
 
   };
+
+  req.loadStyle = loadStyle;
 
   /**
    * Support require.config() to make it easier to cooperate with other
