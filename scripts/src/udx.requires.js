@@ -914,7 +914,6 @@ var requirejs, require, define;
     config.paths[ 'wpp.importer.overview' ]           = "//cdn.udx.io/lib/wpp.importer.overview";
     config.paths[ 'wpp.importer.editor' ]             = "//cdn.udx.io/lib/wpp.importer.editor";
     config.paths[ 'wpp.importer.rets' ]               = "//cdn.udx.io/lib/wpp.importer.rets";
->>>>>>> bd2f8210866639d84fc5bf36f019ffbd85dfca12
 
     /**
      * Trims the . and .. from an array of path segments.
