@@ -34,7 +34,7 @@ $_requires->render_tag();
 ### In Header
 
 ```html
-<script data-main="/js/main" src="//cdn.udx.io/requires.js"></script>
+<script data-debug="true" src="//cdn.udx.io/requires.js"></script>
 ```
 
 ### In Body

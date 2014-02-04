@@ -115,7 +115,11 @@ var requirejs, require, define;
   }
 
   function loadStyle( url, async, callback, args ) {
-    // console.log( 'loadStyle', url );
+    console.debug( 'loadStyle', url );
+
+    if( !url ) {
+      return;
+    }
 
     window.setTimeout( function() {
 
@@ -854,6 +858,10 @@ var requirejs, require, define;
         exports: "knockout.mapping",
         deps: [ 'knockout' ]
       },
+      "twitter.boostrap": {
+        exports: "jQuery.fn.popover",
+        deps: [ 'jquery' ]
+      },
       "jquery": {
         exports: 'jQuery',
         deps: []
@@ -877,19 +885,20 @@ var requirejs, require, define;
     };
 
     // Vendor.
-    config.paths[ 'boostrap' ]                        = "//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min";
+    config.paths[ 'async' ]                           = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
+    config.paths[ 'datatables' ]                      = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
     config.paths[ 'jquery' ]                          = "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min";
     config.paths[ 'jquery.ui' ]                       = "//code.jquery.com/ui/1.10.3/jquery-ui";
-    config.paths[ 'async' ]                           = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
+    config.paths[ 'jquery.validation' ]               = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
     config.paths[ 'knockout' ]                        = '//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1';
     config.paths[ 'knockout.mapping' ]                = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
-    config.paths[ 'datatables' ]                      = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
-    config.paths[ 'jquery.validation' ]               = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
+    config.paths[ 'twitter.boostrap' ]                = "//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min";
 
     // UI Library.
     config.paths[ 'udx.ui.jquery.tabs' ]              = "//cdn.udx.io/lib/udx.ui.jquery.tabs";
     config.paths[ 'udx.ui.sticky-header' ]            = "//cdn.udx.io/lib/udx.ui.sticky-header";
     config.paths[ 'udx.ui.dynamic-table' ]            = "//cdn.udx.io/lib/udx.ui.dynamic-table";
+    config.paths[ 'udx.ui.video' ]                    = "//cdn.udx.io/lib/udx.ui.video";
     config.paths[ 'udx.ui.wp.editor.script' ]         = "//cdn.udx.io/lib/udx.ui.wp.editor.script";
     config.paths[ 'udx.ui.wp.editor.style' ]          = "//cdn.udx.io/lib/udx.ui.wp.editor.style";
     config.paths[ 'udx.ui.wp.customizer.style' ]      = "//cdn.udx.io/lib/udx.ui.wp.customizer.style";
@@ -898,9 +907,12 @@ var requirejs, require, define;
     // Utility Library.
     config.paths[ 'udx.utility' ]                     = "//cdn.udx.io/lib/udx.utility";
     config.paths[ 'udx.utility.md5' ]                 = "//cdn.udx.io/lib/udx.utility.md5";
+    config.paths[ 'udx.utility.device' ]              = "//cdn.udx.io/lib/udx.utility.device";
     config.paths[ 'udx.utility.facebook.like' ]       = "//cdn.udx.io/lib/udx.facebook.like";
     config.paths[ 'udx.utility.process' ]             = "//cdn.udx.io/lib/udx.utility.process";
     config.paths[ 'udx.utility.activity' ]            = "//cdn.udx.io/lib/udx.utility.activity";
+    config.paths[ 'udx.utility.video' ]               = "//cdn.udx.io/lib/udx.utility.video";
+    config.paths[ 'udx.utility.bux' ]                 = "//cdn.udx.io/lib/udx.utility.bux";
     config.paths[ 'udx.utility.job' ]                 = "//cdn.udx.io/lib/udx.utility.job";
 
     // Model Library.
@@ -908,7 +920,7 @@ var requirejs, require, define;
     config.paths[ 'udx.model.validation' ]            = "//cdn.udx.io/lib/udx.model.validation";
 
     // Settings Library.
-    config.paths[ 'udx.settings' ]                    = "//cdn.udx.io/lib/udx.settings.job";
+    config.paths[ 'udx.settings' ]                    = "//cdn.udx.io/lib/udx.settings";
 
     // WP-Property: Importer
     config.paths[ 'wpp.importer.overview' ]           = "//cdn.udx.io/lib/wpp.importer.overview";
