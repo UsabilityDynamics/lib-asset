@@ -67,38 +67,44 @@ namespace UsabilityDynamics {
         }
 
         $args = self::parse_args( $args, array(
-          'id'        => 'main',
-          'type'      => 'model',
-          'context'   => '_',
-          'path'      => admin_url( 'admin-ajax.php?action=' . ( isset( $args[ 'id' ] ) ? $args[ 'id' ] : 'main' ) ),
-          'rewrite'   => null,
+          'id'      => null,
+          'type'    => 'model',
+          'context' => '_',
+          'path'    => admin_url( 'admin-ajax.php' ),
+          'rewrite' => null,
 
-          'base'      => null,
-          'data'      => array(),
-          'config'    => array(),
+          'base'    => null,
+          'data'    => array(),
+          'config'  => array(),
 
-          'shim'      => array(),
-          'deps'      => array(),
+          'shim'    => array(),
+          'deps'    => array(),
 
-          'paths' => array(
+          'paths'   => array(
             'api'   => esc_url( admin_url( 'admin-ajax.php' ) ),
             'home'  => esc_url( home_url( '/' ) ),
             'login' => esc_url( wp_login_url() )
           ),
 
           // Extra Module Request Arguments.
-          'args'   => array(),
+          'args'    => array(),
 
           // HTTP Headers.
-          'cache'  => '',
-          'vary'   => '',
-          'code' => 200
+          'cache'   => '',
+          'vary'    => '',
+          'code'    => 200
         ));
+        
+        if( !$args->id ) {
+          return;
+        }
+
+        $args->path = $args->path . '?action=' . ( isset( $args->id ) ? $args->id : 'main' );
 
         // Create Stateless Settings.
         $this->_settings = new Settings( array(
           'key' => $args->id
-        ));
+        ) );
 
         // Set Passed Arguments.
         $this->set( $args );
@@ -108,7 +114,7 @@ namespace UsabilityDynamics {
         $this->set( '_path', ( $args->path ? $args->path : '/scripts/' . $this->id . '.js' ) );
 
         // Bind Actions.
-        add_action( 'wp_header', array( &$this, 'render_tag' ), 100 );
+        add_action( 'wp_head', array( &$this, 'render_tag' ), 100 );
         add_action( 'admin_print_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
@@ -161,49 +167,47 @@ namespace UsabilityDynamics {
 
         $scope = is_admin() ? 'private' : 'public';
 
-        $_args = apply_filters( 'udx:requires:config', array_filter(array(
-          'src' => self::$server,
-          'data-id' => $this->get( 'id' ),
-          'data-main' => $this->get( '_path' ),
-          'data-scope' => $scope,
+        $_args = apply_filters( 'udx:requires:config', array_filter( array(
+          'src'           => self::$server,
+          'data-id'       => $this->get( 'id' ),
+          'data-main'     => $this->get( '_path' ),
+          'data-scope'    => $scope,
           'data-base-url' => esc_url( $this->get( 'base' ) )
-        )));
+        ) ) );
 
         // Standard Admin.
-        if( current_filter() == 'admin_print_scripts' && $this->backend ) {
+        if( current_filter() == 'admin_print_scripts' && isset( $this->backend ) && $this->backend ) {
           $_args[ 'scope' ] = 'private';
         }
 
-        if( current_filter() == 'admin_print_footer_scripts' && $this->backend ) {
+        if( current_filter() == 'admin_print_footer_scripts' && isset( $this->backend ) && $this->backend ) {
         }
 
         // Admin Customizer Controls.
-        if( current_filter() == 'customize_controls_print_scripts' && $this->customizer ) {
+        if( current_filter() == 'customize_controls_print_scripts' && isset( $this->customizer ) && $this->customizer ) {
           $_args[ 'scope' ] = 'customizer';
         }
 
         // Login Scripts.
-        if( current_filter() == 'login_enqueue_scripts' && $this->login ) {
+        if( current_filter() == 'login_enqueue_scripts' && isset( $this->login ) && $this->login ) {
           $_args[ 'scope' ] = 'login';
         }
 
         // Public Frontend.
-        if( current_filter() == 'wp_footer' && $this->public ) {
+        if( current_filter() == 'wp_footer' && isset( $this->public ) && $this->public ) {
           $_args[ 'scope' ] = 'public';
         }
 
         // Frontned Customization Preview.
-        if( current_filter() == 'customize_preview_init' && $this->preview ) {
+        if( current_filter() == 'customize_preview_init' && isset( $this->preview ) && $this->preview ) {
           $_args[ 'scope' ] = 'preview';
         }
-
 
         $_tag = '';
 
         foreach( (array) $_args as $key => $value ) {
           $_tag .= '' . $key . '=' . '"' . $value . '" ';
         }
-
 
         echo '<script ' . $_tag . "></script>\n";
 
@@ -212,16 +216,14 @@ namespace UsabilityDynamics {
       /**
        * Serve Scripts.
        *
-       *  @todo add html_entity_decode() for data strings.
+       * /admin-ajax.php?action=my.model
+       *
+       * @todo add html_entity_decode() for data strings.
        *
        * @action template_redirect
        * @action admin_init
        */
       function _serve_model() {
-
-        // if( isset( $_SERVER[ 'REDIRECT_URL' ] ) && $_SERVER[ 'REDIRECT_URL' ] === $this->get( '_path' ) ) {}
-
-        // $_action = $_GET[ 'action' ];
 
         // Generate Action Handler.
         do_action( 'udx:requires', $this );
@@ -232,30 +234,26 @@ namespace UsabilityDynamics {
         // Set Headers.
         add_filter( 'nocache_headers', function ( $headers = array() ) {
 
-          $this->set( '_headers', array(
+          $headers = apply_filters( 'udx:requires:headers', array(
             'Content-Type'    => 'application/javascript; charset=' . get_bloginfo( 'charset' ),
             'X-Frame-Options' => 'SAMEORIGIN',
             'Vary'            => 'Accept-Encoding'
           ));
 
-          $headers = apply_filters( 'udx:requires:headers', $headers );
+          return $headers;
 
-          return $this->get( '_headers' );
-
-        });
+        } );
 
         // Standard Headers.
         nocache_headers();
 
-        // WordPress will try to make it 404.
-        http_response_code( $this->get( 'code', 200 ) );
-
         // Model Data.
         $data = apply_filters( 'udx:requires:data', array(
-          'id'      => $this->get( 'id' ),
-          'type'    => $this->get( 'type' ),
-          'data'    => $this->get( 'data' )
-        ));
+          'id'   => $this->get( 'id' ),
+          'type' => $this->get( 'type' ),
+          'data' => $this->get( 'data' )
+        ) );
+
 
         // AMD Configuration.
         $config = apply_filters( 'udx:requires:config', array(
@@ -264,7 +262,7 @@ namespace UsabilityDynamics {
           'deps'    => $this->get( 'deps' ),
           'urlArgs' => $this->get( 'args' ),
           'config'  => $this->get( 'config' )
-        ));
+        ) );
 
         self::send_script( $this->get( 'id' ), array_filter( $data ), array_filter( $config ) );
 
