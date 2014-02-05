@@ -50,6 +50,8 @@ namespace UsabilityDynamics {
        *
        * args.path - relative path to home to serve data-main
        *
+       * Actual script is printed at bottom of page to avoid any conflicts with any third-party scripts thinking they are being loaded using AMD.
+       *
        * @todo Add output cleaning to remove any errors or warnigns.
        * @todo Add logic to not serve JS until template_redirect action to let JS deps register.
        * @todo Instane / settings should probably be based on scope since only a single requires.js instance can be handled per view.
@@ -114,8 +116,8 @@ namespace UsabilityDynamics {
         $this->set( '_path', ( $args->path ? $args->path : '/scripts/' . $this->id . '.js' ) );
 
         // Bind Actions.
-        add_action( 'wp_head', array( &$this, 'render_tag' ), 100 );
-        add_action( 'admin_print_scripts', array( &$this, 'render_tag' ), 100 );
+        add_action( 'wp_footer', array( &$this, 'render_tag' ), 100 );
+        add_action( 'admin_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_preview_init', array( &$this, 'render_tag' ), 100 );
