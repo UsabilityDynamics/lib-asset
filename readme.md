@@ -9,6 +9,13 @@
 
 ## Usage
 
+### Initialize Require Client
+
+data-id
+data-base-url
+data-model
+data-main
+
 ### Initialize WordPress Handler
 
 ```php

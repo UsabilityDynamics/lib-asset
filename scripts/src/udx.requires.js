@@ -905,8 +905,9 @@ var requirejs, require, define;
     config.paths[ 'skrollr' ]                         = '//cdn.udx.io/vendor/skrollr';
     config.paths[ 'swiper' ]                          = '//cdn.udx.io/vendor/swiper';
     config.paths[ 'swiper.scrollbar' ]                = '//cdn.udx.io/vendor/swiper.scrollbar';
-    config.paths[ 'jquery.parallax' ]                 = '//cdn.udx.io/vendor/jquery.parallax';
+    config.paths[ 'elastic.client' ]                  = '//cdn.udx.io/vendor/elastic.client';
     config.paths[ 'parallax' ]                        = '//cdn.udx.io/vendor/parallax';
+    config.paths[ 'jquery.parallax' ]                 = '//cdn.udx.io/vendor/jquery.parallax';
     config.paths[ 'jquery.fancybox' ]                 = '//cdn.udx.io/vendor/jquery.fancybox';
 
     // UI Library.
@@ -936,6 +937,10 @@ var requirejs, require, define;
     // Model Library.
     config.paths[ 'udx.model' ]                       = "//cdn.udx.io/lib/udx.model";
     config.paths[ 'udx.model.validation' ]            = "//cdn.udx.io/lib/udx.model.validation";
+
+
+    // SaaS Library.
+    config.paths[ 'udx.saas.elastic' ]                = "//cdn.udx.io/lib/udx.saas.elastic";
 
     // Settings Library.
     config.paths[ 'udx.settings' ]                    = "//cdn.udx.io/lib/udx.settings";
