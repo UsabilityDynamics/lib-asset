@@ -101,7 +101,6 @@ namespace UsabilityDynamics {
           return;
         }
 
-        $args->path = $args->path . '?action=' . ( isset( $args->id ) ? $args->id : 'main' );
 
         // Create Stateless Settings.
         $this->_settings = new Settings( array(
@@ -112,11 +111,16 @@ namespace UsabilityDynamics {
         $this->set( $args );
 
         // Compute Values.
+
+        // if( strpos( $args->path, admin_url( 'admin-ajax.php' ) === 0 ) ) {}
+
+        // Add an "action" argument if not an admin URL. otherwise leave be.
+        $args->path = $args->path . '?action=' . ( isset( $args->id ) ? $args->id : 'main' );
         $this->set( '_slug', self::create_slug( $args->id ? $args->id : str_replace( '.js', '', basename( $args->path || '/main.js' ) ), array( 'separator' => '-' ) ) );
         $this->set( '_path', ( $args->path ? $args->path : '/scripts/' . $this->id . '.js' ) );
 
         // Bind Actions.
-        add_action( 'wp_enqueue_scripts', array( &$this, 'render_tag' ), 500 );
+        add_action( 'wp_print_footer_scripts', array( &$this, 'render_tag' ), 500 );
         add_action( 'admin_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
