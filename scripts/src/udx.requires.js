@@ -870,6 +870,13 @@ var requirejs, require, define;
         exports: 'jQuery.ui',
         deps: [ 'jquery' ]
       },
+      "jquery.spin": {
+        exports: 'jquery.spin',
+        deps: [ 'jquery' ]
+      },
+      "spin": {
+        exports: 'spin'
+      },
       "jquery.validation": {
         exports: 'jQuery.validation',
         deps: [ 'jquery' ]
@@ -884,7 +891,7 @@ var requirejs, require, define;
       }
     };
 
-    // Vendor.
+    // External Vendors.
     config.paths[ 'async' ]                           = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
     config.paths[ 'datatables' ]                      = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
     config.paths[ 'jquery' ]                          = "//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min";
@@ -894,10 +901,20 @@ var requirejs, require, define;
     config.paths[ 'knockout.mapping' ]                = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
     config.paths[ 'twitter.boostrap' ]                = "//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min";
 
+    // Local Vendors.
+    config.paths[ 'swiper' ]                          = '//cdn.udx.io/vendor/swiper';
+    config.paths[ 'swiper.scrollbar' ]                = '//cdn.udx.io/vendor/swiper.scrollbar';
+    config.paths[ 'jquery.parallax' ]                 = '//cdn.udx.io/vendor/jquery.parallax';
+    config.paths[ 'parallax' ]                        = '//cdn.udx.io/vendor/parallax';
+    config.paths[ 'jquery.fancybox' ]                 = '//cdn.udx.io/vendor/jquery.fancybox';
+
     // UI Library.
     config.paths[ 'udx.ui.jquery.tabs' ]              = "//cdn.udx.io/lib/udx.ui.jquery.tabs";
     config.paths[ 'udx.ui.sticky-header' ]            = "//cdn.udx.io/lib/udx.ui.sticky-header";
     config.paths[ 'udx.ui.dynamic-table' ]            = "//cdn.udx.io/lib/udx.ui.dynamic-table";
+    config.paths[ 'udx.ui.parallax' ]                 = "//cdn.udx.io/lib/udx.ui.parallax";
+    config.paths[ 'udx.ui.swiper' ]                   = "//cdn.udx.io/lib/udx.ui.swiper";
+    config.paths[ 'udx.ui.stream' ]                   = "//cdn.udx.io/lib/udx.ui.stream";
     config.paths[ 'udx.ui.video' ]                    = "//cdn.udx.io/lib/udx.ui.video";
     config.paths[ 'udx.ui.wp.editor.script' ]         = "//cdn.udx.io/lib/udx.ui.wp.editor.script";
     config.paths[ 'udx.ui.wp.editor.style' ]          = "//cdn.udx.io/lib/udx.ui.wp.editor.style";
@@ -912,7 +929,7 @@ var requirejs, require, define;
     config.paths[ 'udx.utility.process' ]             = "//cdn.udx.io/lib/udx.utility.process";
     config.paths[ 'udx.utility.activity' ]            = "//cdn.udx.io/lib/udx.utility.activity";
     config.paths[ 'udx.utility.video' ]               = "//cdn.udx.io/lib/udx.utility.video";
-    config.paths[ 'udx.utility.bux' ]                 = "//cdn.udx.io/lib/udx.utility.bux";
+    config.paths[ 'udx.utility.bus' ]                 = "//cdn.udx.io/lib/udx.utility.bux";
     config.paths[ 'udx.utility.job' ]                 = "//cdn.udx.io/lib/udx.utility.job";
 
     // Model Library.
@@ -921,6 +938,7 @@ var requirejs, require, define;
 
     // Settings Library.
     config.paths[ 'udx.settings' ]                    = "//cdn.udx.io/lib/udx.settings";
+    config.paths[ 'udx.storage' ]                     = "//cdn.udx.io/lib/udx.storage";
 
     // WP-Property: Importer
     config.paths[ 'wpp.importer.overview' ]           = "//cdn.udx.io/lib/wpp.importer.overview";
@@ -1948,15 +1966,17 @@ var requirejs, require, define;
 
       //Make sure any remaining defQueue items get properly processed.
       while( defQueue.length ) {
-      args = defQueue.shift();
-      if( args[0] === null ) {
-      return onError( makeError( 'mismatch', 'Mismatched anonymous define() module: ' + args[args.length - 1] ) );
-      } else {
-      //args are id, deps, factory. Should be normalized by the
-      //define() function.
-      callGetModule( args );
+        args = defQueue.shift();
+
+        if( args[0] === null ) {
+          return onError( makeError( 'mismatch', 'Mismatched anonymous define() module: ' + args[args.length - 1] ) );
+        } else {
+
+        //args are id, deps, factory. Should be normalized by the
+        //define() function.
+        callGetModule( args );
       }
-    }
+      }
     }
 
     context = {
@@ -2941,4 +2961,18 @@ var requirejs, require, define;
     //Set up with config info.
     req( cfg );
 
-    }( this ));
+  }( this ));
+
+/**
+ * Define Test Module.
+ *
+ */
+define( 'udx.test', function() {
+  console.debug( 'udx.test', 'works' );
+
+  return {
+    ok: true,
+    version: require.version
+  }
+
+});
