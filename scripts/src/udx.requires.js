@@ -902,6 +902,7 @@ var requirejs, require, define;
     config.paths[ 'twitter.bootstrap' ]               = "//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min";
 
     // Local Vendors.
+    config.paths[ 'skrollr' ]                         = '//cdn.udx.io/vendor/skrollr';
     config.paths[ 'swiper' ]                          = '//cdn.udx.io/vendor/swiper';
     config.paths[ 'swiper.scrollbar' ]                = '//cdn.udx.io/vendor/swiper.scrollbar';
     config.paths[ 'jquery.parallax' ]                 = '//cdn.udx.io/vendor/jquery.parallax';
@@ -939,6 +940,10 @@ var requirejs, require, define;
     // Settings Library.
     config.paths[ 'udx.settings' ]                    = "//cdn.udx.io/lib/udx.settings";
     config.paths[ 'udx.storage' ]                     = "//cdn.udx.io/lib/udx.storage";
+
+    // WP Theme
+    config.paths[ 'udx.wp.theme' ]                    = "//cdn.udx.io/lib/udx.wp.theme";
+    config.paths[ 'udx.wp.posts' ]                    = "//cdn.udx.io/lib/udx.wp.posts";
 
     // WP-Property: Importer
     config.paths[ 'wpp.importer.overview' ]           = "//cdn.udx.io/lib/wpp.importer.overview";
