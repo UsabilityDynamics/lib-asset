@@ -34,7 +34,7 @@ namespace UsabilityDynamics {
        * @property $server
        * @type {Object}
        */
-      public static $server = '//cdn.udx.io/udx.requires.js';
+      public static $server = '//cdn.udx.io/requires.js';
 
       /**
        * Instance Settings.
@@ -116,7 +116,7 @@ namespace UsabilityDynamics {
         $this->set( '_path', ( $args->path ? $args->path : '/scripts/' . $this->id . '.js' ) );
 
         // Bind Actions.
-        add_action( 'wp_footer', array( &$this, 'render_tag' ), 100 );
+        add_action( 'wp_enqueue_scripts', array( &$this, 'render_tag' ), 500 );
         add_action( 'admin_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
