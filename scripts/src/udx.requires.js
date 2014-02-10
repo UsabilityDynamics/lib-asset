@@ -97,6 +97,14 @@ var requirejs, require, define;
     }
   }, false );
 
+  /**
+   * Fetch All Elemnets by Attribute
+   *
+   * @author potanin@ud
+   * @param attribute
+   * @param type
+   * @returns {Array}
+   */
   function getAllElementsWithAttribute( attribute, type ) {
     var matchingElements = [];
     var allElements = document.getElementsByTagName( type || '*' );
@@ -114,6 +122,15 @@ var requirejs, require, define;
 
   }
 
+  /**
+   * Load and Enqueue Styleshet
+   *
+   * @author potanin@ud
+   * @param url
+   * @param async
+   * @param callback
+   * @param args
+   */
   function loadStyle( url, async, callback, args ) {
     console.debug( 'loadStyle', url );
 
@@ -130,6 +147,28 @@ var requirejs, require, define;
       document.getElementsByTagName( "head" )[0].appendChild( link );
 
     }, 0 )
+
+  }
+
+  /**
+   * Extend Target Object
+   *
+   * @source https://github.com/knockout/knockout/blob/master/src/utils.js
+   * @param target
+   * @param source
+   * @returns {*}
+   */
+  function extend( target, source ) {
+
+    if( source ) {
+      for( var prop in source ) {
+        if( source.hasOwnProperty( prop ) ) {
+          target[prop] = source[prop];
+        }
+      }
+    }
+
+    return target;
 
   }
 
@@ -157,6 +196,7 @@ var requirejs, require, define;
 
     },
     dynamic_loading: function dynamicLoader( deps, callback, errback ) {
+      console.debug( 'dynamic_loading' );
 
       var context = this;
 
@@ -200,7 +240,7 @@ var requirejs, require, define;
         // @todo Fix ghetto timeout - figure out how to make local models be loaded before libs...
         window.setTimeout( function() {
           findTriggers();
-        }, 2000 )
+        }, 100 )
 
       };
 
@@ -871,7 +911,15 @@ var requirejs, require, define;
         deps: [ 'jquery' ]
       },
       "jquery.spin": {
-        exports: 'jquery.spin',
+        exports: 'jQuery.fn.spin',
+        deps: [ 'jquery' ]
+      },
+      "jquery.fancybox": {
+        exports: 'jQuery.fn.fancybox',
+        deps: [ 'jquery' ]
+      },
+      "jquery.isotope": {
+        exports: 'jQuery.fn.isotope',
         deps: [ 'jquery' ]
       },
       "spin": {
@@ -886,8 +934,8 @@ var requirejs, require, define;
         deps: [ 'jquery' ]
       },
       "backbone": {
-        deps: [ "underscore", "jquery" ],
-        exports: "Backbone"
+        deps: [ 'underscore', 'jquery' ],
+        exports: 'Backbone'
       }
     };
 
@@ -909,6 +957,7 @@ var requirejs, require, define;
     config.paths[ 'parallax' ]                        = '//cdn.udx.io/vendor/parallax';
     config.paths[ 'jquery.parallax' ]                 = '//cdn.udx.io/vendor/jquery.parallax';
     config.paths[ 'jquery.fancybox' ]                 = '//cdn.udx.io/vendor/jquery.fancybox';
+    config.paths[ 'jquery.isotope' ]                  = '//cdn.udx.io/vendor/jquery.isotope';
 
     // UI Library.
     config.paths[ 'udx.ui.jquery.tabs' ]              = "//cdn.udx.io/lib/udx.ui.jquery.tabs";
@@ -916,6 +965,7 @@ var requirejs, require, define;
     config.paths[ 'udx.ui.dynamic-table' ]            = "//cdn.udx.io/lib/udx.ui.dynamic-table";
     config.paths[ 'udx.ui.parallax' ]                 = "//cdn.udx.io/lib/udx.ui.parallax";
     config.paths[ 'udx.ui.swiper' ]                   = "//cdn.udx.io/lib/udx.ui.swiper";
+    config.paths[ 'udx.ui.gallery' ]                  = "//cdn.udx.io/lib/udx.ui.gallery";
     config.paths[ 'udx.ui.stream' ]                   = "//cdn.udx.io/lib/udx.ui.stream";
     config.paths[ 'udx.ui.video' ]                    = "//cdn.udx.io/lib/udx.ui.video";
     config.paths[ 'udx.ui.wp.editor.script' ]         = "//cdn.udx.io/lib/udx.ui.wp.editor.script";
@@ -937,7 +987,6 @@ var requirejs, require, define;
     // Model Library.
     config.paths[ 'udx.model' ]                       = "//cdn.udx.io/lib/udx.model";
     config.paths[ 'udx.model.validation' ]            = "//cdn.udx.io/lib/udx.model.validation";
-
 
     // SaaS Library.
     config.paths[ 'udx.saas.elastic' ]                = "//cdn.udx.io/lib/udx.saas.elastic";
