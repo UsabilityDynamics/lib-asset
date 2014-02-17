@@ -1104,6 +1104,7 @@ var requirejs, require, define;
     config.paths[ 'udx.ui.sticky-header' ]            = "//cdn.udx.io/lib/udx.ui.sticky-header";
     config.paths[ 'udx.ui.dynamic-table' ]            = "//cdn.udx.io/lib/udx.ui.dynamic-table";
     config.paths[ 'udx.ui.parallax' ]                 = "//cdn.udx.io/lib/udx.ui.parallax";
+    config.paths[ 'udx.ui.scrollr' ]                  = "//cdn.udx.io/lib/udx.ui.scrollr";
     config.paths[ 'udx.ui.swiper' ]                   = "//cdn.udx.io/lib/udx.ui.swiper";
     config.paths[ 'udx.ui.slider' ]                   = "//cdn.udx.io/lib/udx.ui.slider";
     config.paths[ 'udx.ui.gallery' ]                  = "//cdn.udx.io/lib/udx.ui.gallery";
