@@ -101,7 +101,6 @@ namespace UsabilityDynamics {
           return;
         }
 
-
         // Create Stateless Settings.
         $this->_settings = new Settings( array(
           'key' => $args->id
@@ -122,7 +121,6 @@ namespace UsabilityDynamics {
         // Bind Actions.
         add_action( 'wp_print_footer_scripts', array( &$this, 'render_tag' ), 500 );
         add_action( 'admin_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
-        add_action( 'customize_controls_print_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_controls_print_footer_scripts', array( &$this, 'render_tag' ), 100 );
         add_action( 'customize_preview_init', array( &$this, 'render_tag' ), 100 );
         add_action( 'login_enqueue_scripts', array( &$this, 'render_tag' ), 100 );
@@ -177,6 +175,7 @@ namespace UsabilityDynamics {
           'src'           => self::$server,
           'data-id'       => $this->get( 'id' ),
           'data-main'     => $this->get( '_path' ),
+          'data-version'     => $this->get( 'version' ),
           'data-scope'    => $scope,
           'data-base-url' => esc_url( $this->get( 'base' ) )
         ) ) );
