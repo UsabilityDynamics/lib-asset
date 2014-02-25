@@ -121,10 +121,18 @@
   69.8 KB unminified.</p>
 <h2 id="usage">Usage</h2>
 <h3 id="initialize-require-client">Initialize Require Client</h3>
-<p>data-id
-data-base-url
-data-model
-data-main</p>
+<ul>
+<li>data-id</li>
+<li>data-name</li>
+<li>data-base-url</li>
+<li>data-model</li>
+<li>data-version - Will append a &quot;ver=X.X&quot; version to each requested script.</li>
+<li>data-main</li>
+<li>data-status - (loading|ready|error)</li>
+<li>data-requiremodule</li>
+<li>data-requirecontext</li>
+<li>data-requires / data-require / data-enqueue</li>
+</ul>
 <h3 id="initialize-wordpress-handler">Initialize WordPress Handler</h3>
 <pre><code class="lang-php">// Initialize.
 $_requires = new \UsabilityDynamics\Requires;

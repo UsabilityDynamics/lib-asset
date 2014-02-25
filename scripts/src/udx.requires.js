@@ -102,20 +102,17 @@ var requirejs, require, define;
   }, false );
 
   /**
+   * Convert Object to URL Parameter String.
    *
    * @param obj
-   * @param prefix {String|Null}
    * @returns {string}
    */
    function stringifyObject(obj ) {
-
     var str = [];
     var prefix = arguments[1] ? arguments[1] : null;
-    for(var p in obj) {
+    for( var p in obj ) {
       var k = prefix ? prefix + "[" + p + "]" : p, v = obj[p];
-      str.push(typeof v == "object" ?
-        serializeQuery(v, k) :
-        encodeURIComponent(k) + "=" + encodeURIComponent(v));
+      str.push( typeof v == "object" ? stringifyObject( v, k ) : encodeURIComponent( k ) + "=" + encodeURIComponent( v ) );
     }
     return str.join("&");
   }
