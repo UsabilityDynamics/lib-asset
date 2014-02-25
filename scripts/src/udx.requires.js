@@ -117,7 +117,6 @@ var requirejs, require, define;
     return str.join("&");
   }
 
-
   /**
    * Fetch All Elemnets by Attribute
    *

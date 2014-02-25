@@ -116,9 +116,31 @@
 <ul>
 <li>Requires will only produce a single script tag per page request, but multiple may be supported in the future.</li>
 </ul>
+<h2 id="wordpress-concepts">WordPress Concepts</h2>
+<ul>
+<li>Only footer scripts are converted to AMD, header scripts assumed to be necessary for <body> to render, and are blocking.</li>
+<li>The AMD configuration is stored in app.config.js.</li>
+<li>Each script&#39;s localization data is loaded via app.locale.js. Traditional global variables are honored in addition to be each locale setting object being wrapped into define()</li>
+<li>Recognized AMD scripts are stored in options table.</li>
+<li>Recognized AMD scripts are dequed from footer (wp_print_footer_scripts) only if they are loaded prior to &quot;template_redirect&quot; action.
+*</li>
+</ul>
+<p>Config Properties
+The app.config.js file includes:</p>
+<ul>
+<li>baseUrl - Relative URL to assets, typically simply /assets.</li>
+<li>paths - Reference to paths of all enqueued scripts via wp_enqueue_script() and dependencies that are not available via UDX CDN.</li>
+<li>deps - All enqueued scripts that should be loaded on initialization, e.g. &#39;jquery&#39;, &#39;jquery.accordion&#39;, &#39;menufication-js&#39;, etc.</li>
+<li>shim - Dependencies of enqueued scripts.</li>
+<li>config - Object containing all custom configuration such as Analytics ID, Locale Strings, Menufication settings, etc. This configuration does not take user session or application state into consideration.</li>
+</ul>
 <h2 id="size">Size</h2>
-<p>  17.7 KB minified
-  69.8 KB unminified.</p>
+<p>The size of the main <a href="http://cdn.udx.io/udx.requires.js">http://cdn.udx.io/udx.requires.js</a> file is:</p>
+<ul>
+<li>11.1 KB - Minified and GZipped.</li>
+<li>17.7 KB - Minified.</li>
+<li>69.8 KB - Unminified.</li>
+</ul>
 <h2 id="usage">Usage</h2>
 <h3 id="initialize-require-client">Initialize Require Client</h3>
 <ul>
