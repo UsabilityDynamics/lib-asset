@@ -11,10 +11,16 @@
 
 ### Initialize Require Client
 
-data-id
-data-base-url
-data-model
-data-main
+* data-id
+* data-name
+* data-base-url
+* data-model
+* data-version - Will append a "ver=X.X" version to each requested script.
+* data-main
+* data-status - (loading|ready|error)
+* data-requiremodule
+* data-requirecontext
+* data-requires / data-require / data-enqueue
 
 ### Initialize WordPress Handler
 

@@ -7,13 +7,13 @@
  * * ECMA5 shim - defineProperty, getOwnPropertyDescriptor, etc.
  * * Object Validation methods - Object.defineSchema(), Object.validateSchema()
  *
- * @version 3.0.3
+ * @version 3.0.4
  */
 var requirejs, require, define;
 
 (function( global ) {
 
-  var version = '3.0.3';
+  var version = '3.0.4';
 
   var req, s, head, baseElement, dataMain, src, interactiveScript, currentlyAddingScript, mainScript, subPath, commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg, cjsRequireRegExp = /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g, jsSuffixRegExp = /\.js$/, currDirRegExp = /^\.\//, op = Object.prototype, ostring = op.toString, hasOwn = op.hasOwnProperty, ap = Array.prototype, apsp = ap.splice, isBrowser = !!(typeof window !== 'undefined' && typeof navigator !== 'undefined' && window.document), isWebWorker = !isBrowser && typeof importScripts !== 'undefined';
   var readyRegExp = isBrowser && navigator.platform === 'PLAYSTATION 3' ? /^complete$/ : /^(complete|loaded)$/, defContextName = '_';
@@ -102,6 +102,26 @@ var requirejs, require, define;
   }, false );
 
   /**
+   *
+   * @param obj
+   * @param prefix {String|Null}
+   * @returns {string}
+   */
+   function stringifyObject(obj ) {
+
+    var str = [];
+    var prefix = arguments[1] ? arguments[1] : null;
+    for(var p in obj) {
+      var k = prefix ? prefix + "[" + p + "]" : p, v = obj[p];
+      str.push(typeof v == "object" ?
+        serializeQuery(v, k) :
+        encodeURIComponent(k) + "=" + encodeURIComponent(v));
+    }
+    return str.join("&");
+  }
+
+
+  /**
    * Fetch All Elemnets by Attribute
    *
    * @author potanin@ud
@@ -183,7 +203,7 @@ var requirejs, require, define;
    * @returns {{}}
    */
   function parseOptions( string ) {
-    console.debug( 'parseOptions', string );
+    // console.debug( 'parseOptions', string );
 
     var options = {};
     var parts = ( string || '' ).split( ',' );
@@ -1139,6 +1159,7 @@ var requirejs, require, define;
 
     // WP Theme
     config.paths[ 'udx.wp.spa' ]                      = "//cdn.udx.io/lib/udx.wp.spa";
+    config.paths[ 'udx.wp.editor' ]                   = "//cdn.udx.io/lib/udx.wp.editor";
     config.paths[ 'udx.wp.theme' ]                    = "//cdn.udx.io/lib/udx.wp.theme";
     config.paths[ 'udx.wp.posts' ]                    = "//cdn.udx.io/lib/udx.wp.posts";
 
@@ -2667,9 +2688,15 @@ var requirejs, require, define;
 
         }
 
+
         // Add urlArgs if an object exists.
-        if( config.urlArgs && Object.keys( config.urlArgs ).length ) {
-          url = config.urlArgs ? url + ((url.indexOf( '?' ) === -1 ? '?' : '&') + config.urlArgs) : url;
+        if( config.urlArgs ) {
+
+          // Convert urlArgs to string if object given.
+          var _args =  Object.keys( config.urlArgs ).length ? stringifyObject( config.urlArgs ) : config.urlArgs;
+
+          url = config.urlArgs ? url + ((url.indexOf( '?' ) === -1 ? '?' : '&') + _args) : url;
+
         }
 
         return url;
@@ -3038,7 +3065,6 @@ var requirejs, require, define;
     //Figure out baseUrl. Get it from the script tag with require.js in it.
     eachReverse( scripts(), function( script ) {
 
-
       //Set the 'head' where we can append children by
       //using the script's parent.
       if( !head ) {
@@ -3062,6 +3088,11 @@ var requirejs, require, define;
       //to load. If it is there, the path to data main becomes the
       //baseUrl, if it is not already set.
       dataMain = script.getAttribute( 'data-main' );
+
+      // Add "ver" parameter if version provided.
+      if( script.getAttribute( 'data-version' ) != '' ) {
+        cfg.urlArgs = { ver: script.getAttribute( 'data-version' ) };
+      }
 
       if( dataMain ) {
 
@@ -3106,6 +3137,8 @@ var requirejs, require, define;
 
     /**
      * Add Check to ensure that the script we found references the
+     *
+     *
      */
     req.nextTick( function otherScriptTags() {
 
@@ -3118,6 +3151,7 @@ var requirejs, require, define;
           //cfg.paths[ 'asdfasf' ] = 'asdsadf';
 
           var dataId = element.getAttribute( 'data-id' );
+          var dataVersion = element.getAttribute( 'data-version' );
           var dataName = element.getAttribute( 'data-name' );
           var dataMain = element.getAttribute( 'data-main' );
 
