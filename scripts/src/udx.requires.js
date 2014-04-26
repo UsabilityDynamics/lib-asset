@@ -7,13 +7,13 @@
  * * ECMA5 shim - defineProperty, getOwnPropertyDescriptor, etc.
  * * Object Validation methods - Object.defineSchema(), Object.validateSchema()
  *
- * @version 3.0.4
+ * @version 3.1.0
  */
 var requirejs, require, define;
 
 (function( global ) {
 
-  var version = '3.0.5';
+  var version = '3.1.0';
 
   var req, s, head, baseElement, dataMain, src, interactiveScript, currentlyAddingScript, mainScript, subPath, commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg, cjsRequireRegExp = /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g, jsSuffixRegExp = /\.js$/, currDirRegExp = /^\.\//, op = Object.prototype, ostring = op.toString, hasOwn = op.hasOwnProperty, ap = Array.prototype, apsp = ap.splice, isBrowser = !!(typeof window !== 'undefined' && typeof navigator !== 'undefined' && window.document), isWebWorker = !isBrowser && typeof importScripts !== 'undefined';
   var readyRegExp = isBrowser && navigator.platform === 'PLAYSTATION 3' ? /^complete$/ : /^(complete|loaded)$/, defContextName = '_';
@@ -22,6 +22,18 @@ var requirejs, require, define;
   var globalDefQueue = [];
   var useInteractive = false;
   var debugBuild = false;
+
+  // Try loading inline configuration.
+  try {
+    var _lastScript = document.getElementsByTagName( 'script' )[ document.getElementsByTagName( 'script' ).length - 1];
+
+    if( _lastScript.getAttribute( 'data-config' ) ) {
+      cfg = JSON.parse( _lastScript.getAttribute( 'data-config' ) );
+    } else if ( _lastScript.innerText ) {
+      cfg = JSON.parse( _lastScript.innerText );
+    }
+
+  } catch( error ) {}
 
   if( window.domReady == undefined ) {
     window.domReady = {};
@@ -56,6 +68,7 @@ var requirejs, require, define;
   document.addEventListener( "DOMContentLoaded", function onDom( event ) {
     var windomready = window.domReady; //Save the window hook
     var olddomready = document.domReady; //Save the document hook
+
     if( (document.domReady) || (window.domReady) ) { //Check for the hooks
       if( isLaunched > 0 ) { //Check if DomReady hasn't been launched
 
@@ -101,13 +114,82 @@ var requirejs, require, define;
     }
   }, false );
 
+
+  /**
+   * UDX Base Application
+   *
+   * require( 'udx' ).emit();
+   *
+   * @returns {{get: get, set: set, bind: bind}}
+   */
+  function udxBaseModule() {
+    // console.debug( 'udx', 'udxBaseModule' );
+
+    var self = window.__udx = window.__udx = {
+      _events: {},
+      _settings: {},
+      _cache: {}
+    };
+
+    return {
+      version: require.version,
+      /**
+       *
+       * @param handler
+       * @returns {{_events: {}, _settings: {}, _cache: {}}}
+       */
+      configure: function configure( handler ) {
+
+        if( 'function' === typeof handler ) {
+          handler.call( self );
+        }
+
+        return self;
+
+      },
+      emit: function emit( tag, data, callback ) {
+
+        self._events[ tag ] = self._events[ tag ] || [];
+
+        self._events[ tag ].forEach( function( callback ) {
+          callback.call( self, data );
+        });
+
+        return self;
+
+      },
+      on: function on( tag, callback ) {
+        self._events[ tag ] = self._events[ tag ] || [];
+        self._events[ tag ].push( callback );
+        return self;
+      },
+      get: function get( key ) {},
+      set: function set( key, value ) {},
+      bind: function bind( name, app ) {
+        return self._cache[ app ] = app;
+      }
+    }
+
+  }
+
+  Object.defineProperties( udxBaseModule, {
+    create: {
+      value: function create() {
+        return new udxBaseModule;
+      },
+      enumerable: true,
+      configurable: true,
+      writable: true
+    }
+  })
+
   /**
    * Convert Object to URL Parameter String.
    *
    * @param obj
    * @returns {string}
    */
-   function stringifyObject(obj ) {
+  function stringifyObject( obj ) {
     var str = [];
     var prefix = arguments[1] ? arguments[1] : null;
     for( var p in obj ) {
@@ -282,10 +364,30 @@ var requirejs, require, define;
         }
 
         /**
+         * Load Optional Module Controller for DOM Element
          *
          * @param element
          */
+        function loadController( element ) {
+          return loadRequires( element );
+        }
+
+        /**
+         * DOM Element Required for Module
+         *
+         * @param element
+         * @returns {*}
+         */
         function loadRequired( element ) {
+          return loadRequires( element );
+        }
+
+        /**
+         * DOM Element Requires a Module
+         *
+         * @param element
+         */
+        function loadRequires( element ) {
           //context.log( 'element[data-requires]', element );
 
           // Only load once.
@@ -327,9 +429,9 @@ var requirejs, require, define;
 
         }
 
-        getAllElementsWithAttribute( 'data-requires', null ).each( loadRequired );
-        getAllElementsWithAttribute( 'data-require', null ).each( loadRequired );
-        getAllElementsWithAttribute( 'data-enqueue', null ).each( loadRequired );
+        getAllElementsWithAttribute( 'data-controller', null ).each( loadController );
+        getAllElementsWithAttribute( 'data-requires', null ).each( loadRequires );
+        getAllElementsWithAttribute( 'data-required', null ).each( loadRequired );
 
       }
 
@@ -500,6 +602,15 @@ var requirejs, require, define;
     }
   }
 
+  function doesDefinePropertyWork( object ) {
+    try {
+      Object.defineProperty( object, "sentinel", {} );
+      return "sentinel" in object;
+    } catch( exception ) {
+      // returns falsy
+    }
+  }
+
   if( Object.defineProperty ) {
     var getOwnPropertyDescriptorWorksOnObject = doesGetOwnPropertyDescriptorWork( {} );
     var getOwnPropertyDescriptorWorksOnDom = typeof document == "undefined" || doesGetOwnPropertyDescriptorWork( document.createElement( "div" ) );
@@ -659,14 +770,6 @@ var requirejs, require, define;
     };
   }
 
-  function doesDefinePropertyWork( object ) {
-    try {
-      Object.defineProperty( object, "sentinel", {} );
-      return "sentinel" in object;
-    } catch( exception ) {
-      // returns falsy
-    }
-  }
 
   if( Object.defineProperty ) {
     var definePropertyWorksOnObject = doesDefinePropertyWork( {} );
@@ -853,10 +956,22 @@ var requirejs, require, define;
     };
   }
 
+  /**
+   * Variable is Functions
+   *
+   * @param it
+   * @returns {boolean}
+   */
   function isFunction( it ) {
     return ostring.call( it ) === '[object Function]';
   }
 
+  /**
+   * Variable Is Array
+   *
+   * @param it
+   * @returns {boolean}
+   */
   function isArray( it ) {
     return ostring.call( it ) === '[object Array]';
   }
@@ -958,8 +1073,12 @@ var requirejs, require, define;
     throw err;
   }
 
-  //Allow getting a global that expressed in
-  //dot notation, like 'a.b.c'.
+  /**
+   * Allow getting a global that expressed in dot notation, like 'a.b.c'.
+   *
+   * @param value
+   * @returns {*}
+   */
   function getGlobal( value ) {
     if( !value ) {
       return value;
@@ -1011,85 +1130,91 @@ var requirejs, require, define;
     require = undefined;
   }
 
+  /**
+   * Neq Requires Context
+   *
+   * @param contextName
+   * @returns {{config: {waitSeconds: number, baseUrl: string, paths: {}, pkgs: {}, shim: {}, config: {}}, contextName: *, registry: {}, defined: {}, urlFetched: {}, defQueue: Array, Module: Module, makeModuleMap: makeModuleMap, nextTick: (*|nextTick|Function), onError: onError, log: debugLog, info: infoLog, configure: configure, makeShimExports: makeShimExports, makeRequire: makeRequire, enable: enable, completeLoad: completeLoad, nameToUrl: nameToUrl, load: load, execCb: execCb, onScriptLoad: onScriptLoad, onScriptError: onScriptError}}
+   */
   function newContext( contextName ) {
-    var inCheckLoaded, Module, context, handlers, checkLoadedTimeoutId, config = {
-        //Defaults. Do not set a default for map
-        //config to speed up normalize(), which
-        //will run faster if there is no default.
+    var inCheckLoaded, Module, context, handlers, checkLoadedTimeoutId, registry = {}, enabledRegistry = {}, undefEvents = {}, defQueue = [], defined = {}, urlFetched = {}, requireCounter = 1, unnormalizedCounter = 1;
+
+    var config = {
         waitSeconds: 7,
         baseUrl: './',
         paths: {},
         pkgs: {},
-        shim: {},
+        shim: {
+          "knockout": {
+            // exports: "knockout"
+          },
+          "knockout.mapping": {
+            exports: "knockout.mapping",
+            deps: [ 'knockout' ]
+          },
+          "twitter.bootstrap": {
+            exports: "jQuery.fn.popover",
+            deps: [ 'jquery' ]
+          },
+          "jquery": {
+            exports: 'jQuery',
+            deps: []
+          },
+          "jquery.ui": {
+            exports: 'jQuery.ui',
+            deps: [ 'jquery' ]
+          },
+          "jquery.spin": {
+            exports: 'jQuery.fn.spin',
+            deps: [ 'jquery' ]
+          },
+          "jquery.fancybox": {
+            exports: 'jQuery.fn.fancybox',
+            deps: [ 'jquery' ]
+          },
+          "jquery.isotope": {
+            exports: 'jQuery.fn.isotope',
+            deps: [ 'jquery' ]
+          },
+          "jquery.scrollto": {
+            exports: 'jQuery.fn.scrollto',
+            deps: [ 'jquery' ]
+          },
+          "jquery.resizely": {
+            exports: 'jQuery.fn.resizely',
+            deps: [ 'jquery' ]
+          },
+          "jquery.lazyload": {
+            exports: 'jQuery.fn.lazyload',
+            deps: [ 'jquery' ]
+          },
+          "sammy": {
+            exports: 'sammy',
+            deps: [ 'jquery' ]
+          },
+          "spin": {
+            exports: 'spin'
+          },
+          "swiper": {
+            exports: 'Swiper',
+            deps: [ 'jquery' ]
+          },
+          "jquery.validation": {
+            exports: 'jQuery.validation',
+            deps: [ 'jquery' ]
+          },
+          "datatables": {
+            //exports: 'jQuery.dataTable',
+            deps: [ 'jquery' ]
+          },
+          "backbone": {
+            deps: [ 'underscore', 'jquery' ],
+            exports: 'Backbone'
+          }
+        },
         config: {}
-      }, registry = {}, //registry of just enabled modules, to speed
-    //cycle breaking code when lots of modules
-    //are registered, but not activated.
-      enabledRegistry = {}, undefEvents = {}, defQueue = [], defined = {}, urlFetched = {}, requireCounter = 1, unnormalizedCounter = 1;
+      };
 
-    // Default Shim.
-    config.shim = {
-      "knockout": {
-        // exports: "knockout"
-      },
-      "knockout.mapping": {
-        exports: "knockout.mapping",
-        deps: [ 'knockout' ]
-      },
-      "twitter.bootstrap": {
-        exports: "jQuery.fn.popover",
-        deps: [ 'jquery' ]
-      },
-      "jquery": {
-        exports: 'jQuery',
-        deps: []
-      },
-      "jquery.ui": {
-        exports: 'jQuery.ui',
-        deps: [ 'jquery' ]
-      },
-      "jquery.spin": {
-        exports: 'jQuery.fn.spin',
-        deps: [ 'jquery' ]
-      },
-      "jquery.fancybox": {
-        exports: 'jQuery.fn.fancybox',
-        deps: [ 'jquery' ]
-      },
-      "jquery.isotope": {
-        exports: 'jQuery.fn.isotope',
-        deps: [ 'jquery' ]
-      },
-      "jquery.scrollto": {
-        exports: 'jQuery.fn.scrollto',
-        deps: [ 'jquery' ]
-      },
-      "sammy": {
-        exports: 'sammy',
-        deps: [ 'jquery' ]
-      },
-      "spin": {
-        exports: 'spin'
-      },
-      "swiper": {
-        exports: 'Swiper',
-        deps: [ 'jquery' ]
-      },
-      "jquery.validation": {
-        exports: 'jQuery.validation',
-        deps: [ 'jquery' ]
-      },
-      "datatables": {
-        //exports: 'jQuery.dataTable',
-        deps: [ 'jquery' ]
-      },
-      "backbone": {
-        deps: [ 'underscore', 'jquery' ],
-        exports: 'Backbone'
-      }
-    };
-
-    // External Vendors.
     config.paths[ 'async' ]                           = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
     config.paths[ 'datatables' ]                      = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
     config.paths[ 'jquery.ui' ]                       = "//code.jquery.com/ui/1.10.3/jquery-ui";
@@ -1099,70 +1224,76 @@ var requirejs, require, define;
     config.paths[ 'twitter.bootstrap' ]               = "//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min";
 
     // Local Vendors.
-    config.paths[ 'imagesloaded' ]                    = '//cdn.udx.io/vendor/imagesloaded';
-    config.paths[ 'skrollr' ]                         = '//cdn.udx.io/vendor/skrollr';
-    config.paths[ 'swiper' ]                          = '//cdn.udx.io/vendor/swiper';
-    config.paths[ 'swiper.scrollbar' ]                = '//cdn.udx.io/vendor/swiper.scrollbar';
-    config.paths[ 'elastic.client' ]                  = '//cdn.udx.io/vendor/elastic.client';
-    config.paths[ 'parallax' ]                        = '//cdn.udx.io/vendor/parallax';
-    config.paths[ 'pace' ]                            = '//cdn.udx.io/vendor/pace';
-    config.paths[ 'history' ]                         = '//cdn.udx.io/vendor/history';
-    config.paths[ 'sammy' ]                           = '//cdn.udx.io/vendor/sammy';
-    config.paths[ 'emitter' ]                         = '//cdn.udx.io/vendor/emitter';
-    config.paths[ 'jquery' ]                          = '//cdn.udx.io/vendor/jquery';
-    config.paths[ 'jquery.scrollto' ]                 = '//cdn.udx.io/vendor/jquery.scrollto';
-    config.paths[ 'jquery.parallax' ]                 = '//cdn.udx.io/vendor/jquery.parallax';
-    config.paths[ 'jquery.fancybox' ]                 = '//cdn.udx.io/vendor/jquery.fancybox';
-    config.paths[ 'jquery.isotope' ]                  = '//cdn.udx.io/vendor/jquery.isotope';
+    config.paths[ 'skrollr' ]                         = '//cdn.udx.io/skrollr';
+    config.paths[ 'swiper' ]                          = '//cdn.udx.io/swiper';
+    config.paths[ 'swiper.scrollbar' ]                = '//cdn.udx.io/swiper.scrollbar';
+    config.paths[ 'elastic.client' ]                  = '//cdn.udx.io/elastic.client';
+    config.paths[ 'parallax' ]                        = '//cdn.udx.io/parallax';
+    config.paths[ 'pace' ]                            = '//cdn.udx.io/pace';
+    config.paths[ 'history' ]                         = '//cdn.udx.io/history';
+    config.paths[ 'sammy' ]                           = '//cdn.udx.io/sammy';
+    config.paths[ 'emitter' ]                         = '//cdn.udx.io/emitter';
+    config.paths[ 'resizely' ]                        = '//cdn.udx.io/resizely';
+    config.paths[ 'jquery' ]                          = '//cdn.udx.io/jquery';
+    config.paths[ 'jquery.scrollto' ]                 = '//cdn.udx.io/jquery.scrollto';
+    config.paths[ 'jquery.parallax' ]                 = '//cdn.udx.io/jquery.parallax';
+    config.paths[ 'jquery.fancybox' ]                 = '//cdn.udx.io/jquery.fancybox';
+    config.paths[ 'jquery.isotope' ]                  = '//cdn.udx.io/jquery.isotope';
+    config.paths[ 'jquery.resizely' ]                 = '//cdn.udx.io/jquery.resizely';
+    config.paths[ 'jquery.lazyload' ]                 = '//cdn.udx.io/jquery.lazyload';
+    config.paths[ 'jquery.scrollstop' ]               = '//cdn.udx.io/jquery.scrollstop';
 
     // UI Library.
-    config.paths[ 'udx.ui.jquery.tabs' ]              = "//cdn.udx.io/lib/udx.ui.jquery.tabs";
-    config.paths[ 'udx.ui.sticky-header' ]            = "//cdn.udx.io/lib/udx.ui.sticky-header";
-    config.paths[ 'udx.ui.dynamic-table' ]            = "//cdn.udx.io/lib/udx.ui.dynamic-table";
-    config.paths[ 'udx.ui.parallax' ]                 = "//cdn.udx.io/lib/udx.ui.parallax";
-    config.paths[ 'udx.ui.scrollr' ]                  = "//cdn.udx.io/lib/udx.ui.scrollr";
-    config.paths[ 'udx.ui.swiper' ]                   = "//cdn.udx.io/lib/udx.ui.swiper";
-    config.paths[ 'udx.ui.slider' ]                   = "//cdn.udx.io/lib/udx.ui.slider";
-    config.paths[ 'udx.ui.gallery' ]                  = "//cdn.udx.io/lib/udx.ui.gallery";
-    config.paths[ 'udx.ui.stream' ]                   = "//cdn.udx.io/lib/udx.ui.stream";
-    config.paths[ 'udx.ui.video' ]                    = "//cdn.udx.io/lib/udx.ui.video";
-    config.paths[ 'udx.ui.wp.editor.script' ]         = "//cdn.udx.io/lib/udx.ui.wp.editor.script";
-    config.paths[ 'udx.ui.wp.editor.style' ]          = "//cdn.udx.io/lib/udx.ui.wp.editor.style";
-    config.paths[ 'udx.ui.wp.customizer.style' ]      = "//cdn.udx.io/lib/udx.ui.wp.customizer.style";
-    config.paths[ 'udx.ui.wp.customizer.script' ]     = "//cdn.udx.io/lib/udx.ui.wp.customizer.script";
+    config.paths[ 'udx.ui.jquery.tabs' ]              = "//cdn.udx.io/udx.ui.jquery.tabs";
+    config.paths[ 'udx.ui.sticky-header' ]            = "//cdn.udx.io/udx.ui.sticky-header";
+    config.paths[ 'udx.ui.dynamic-table' ]            = "//cdn.udx.io/udx.ui.dynamic-table";
+    config.paths[ 'udx.ui.parallax' ]                 = "//cdn.udx.io/udx.ui.parallax";
+    config.paths[ 'udx.ui.scrollr' ]                  = "//cdn.udx.io/udx.ui.scrollr";
+    config.paths[ 'udx.ui.swiper' ]                   = "//cdn.udx.io/udx.ui.swiper";
+    config.paths[ 'udx.ui.slider' ]                   = "//cdn.udx.io/udx.ui.slider";
+    config.paths[ 'udx.ui.gallery' ]                  = "//cdn.udx.io/udx.ui.gallery";
+    config.paths[ 'udx.ui.stream' ]                   = "//cdn.udx.io/udx.ui.stream";
+    config.paths[ 'udx.ui.video' ]                    = "//cdn.udx.io/udx.ui.video";
+    config.paths[ 'udx.ui.wp.editor.script' ]         = "//cdn.udx.io/udx.ui.wp.editor.script";
+    config.paths[ 'udx.ui.wp.editor.style' ]          = "//cdn.udx.io/udx.ui.wp.editor.style";
+    config.paths[ 'udx.ui.wp.customizer.style' ]      = "//cdn.udx.io/udx.ui.wp.customizer.style";
+    config.paths[ 'udx.ui.wp.customizer.script' ]     = "//cdn.udx.io/udx.ui.wp.customizer.script";
 
     // Utility Library.
-    config.paths[ 'udx.utility' ]                     = "//cdn.udx.io/lib/udx.utility";
-    config.paths[ 'udx.utility.md5' ]                 = "//cdn.udx.io/lib/udx.utility.md5";
-    config.paths[ 'udx.utility.device' ]              = "//cdn.udx.io/lib/udx.utility.device";
-    config.paths[ 'udx.utility.facebook.like' ]       = "//cdn.udx.io/lib/udx.facebook.like";
-    config.paths[ 'udx.utility.process' ]             = "//cdn.udx.io/lib/udx.utility.process";
-    config.paths[ 'udx.utility.activity' ]            = "//cdn.udx.io/lib/udx.utility.activity";
-    config.paths[ 'udx.utility.video' ]               = "//cdn.udx.io/lib/udx.utility.video";
-    config.paths[ 'udx.utility.bus' ]                 = "//cdn.udx.io/lib/udx.utility.bux";
-    config.paths[ 'udx.utility.job' ]                 = "//cdn.udx.io/lib/udx.utility.job";
+    config.paths[ 'udx.utility' ]                     = "//cdn.udx.io/udx.utility";
+    config.paths[ 'udx.utility.md5' ]                 = "//cdn.udx.io/udx.utility.md5";
+    config.paths[ 'udx.utility.device' ]              = "//cdn.udx.io/udx.utility.device";
+    config.paths[ 'udx.utility.facebook.like' ]       = "//cdn.udx.io/udx.facebook.like";
+    config.paths[ 'udx.utility.process' ]             = "//cdn.udx.io/udx.utility.process";
+    config.paths[ 'udx.utility.activity' ]            = "//cdn.udx.io/udx.utility.activity";
+    config.paths[ 'udx.utility.video' ]               = "//cdn.udx.io/udx.utility.video";
+    config.paths[ 'udx.utility.bus' ]                 = "//cdn.udx.io/udx.utility.bux";
+    config.paths[ 'udx.utility.job' ]                 = "//cdn.udx.io/udx.utility.job";
+    config.paths[ 'udx.utility.imagesloaded' ]        = "//cdn.udx.io/udx.utility.imagesloaded";
+    config.paths[ 'udx.analytics' ]                   = "//cdn.udx.io/udx.analytics";
 
     // Model Library.
-    config.paths[ 'udx.model' ]                       = "//cdn.udx.io/lib/udx.model";
-    config.paths[ 'udx.model.validation' ]            = "//cdn.udx.io/lib/udx.model.validation";
+    config.paths[ 'udx.model' ]                       = "//cdn.udx.io/udx.model";
+    config.paths[ 'udx.model.validation' ]            = "//cdn.udx.io/udx.model.validation";
 
     // SaaS Library.
-    config.paths[ 'udx.saas.elastic' ]                = "//cdn.udx.io/lib/udx.saas.elastic";
+    config.paths[ 'udx.saas.elastic' ]                = "//cdn.udx.io/udx.saas.elastic";
 
     // Settings Library.
-    config.paths[ 'udx.settings' ]                    = "//cdn.udx.io/lib/udx.settings";
-    config.paths[ 'udx.storage' ]                     = "//cdn.udx.io/lib/udx.storage";
+    config.paths[ 'udx.settings' ]                    = "//cdn.udx.io/udx.settings";
+    config.paths[ 'udx.storage' ]                     = "//cdn.udx.io/udx.storage";
 
     // WP Theme
-    config.paths[ 'udx.wp.spa' ]                      = "//cdn.udx.io/lib/udx.wp.spa";
-    config.paths[ 'udx.wp.editor' ]                   = "//cdn.udx.io/lib/udx.wp.editor";
-    config.paths[ 'udx.wp.theme' ]                    = "//cdn.udx.io/lib/udx.wp.theme";
-    config.paths[ 'udx.wp.posts' ]                    = "//cdn.udx.io/lib/udx.wp.posts";
+    config.paths[ 'udx.spa' ]                         = "//cdn.udx.io/udx.spa";
+    config.paths[ 'udx.wp.spa' ]                      = "//cdn.udx.io/udx.wp.spa";
+    config.paths[ 'udx.wp.editor' ]                   = "//cdn.udx.io/udx.wp.editor";
+    config.paths[ 'udx.wp.theme' ]                    = "//cdn.udx.io/udx.wp.theme";
+    config.paths[ 'udx.wp.posts' ]                    = "//cdn.udx.io/udx.wp.posts";
 
     // WP-Property: Importer
-    config.paths[ 'wpp.importer.overview' ]           = "//cdn.udx.io/lib/wpp.importer.overview";
-    config.paths[ 'wpp.importer.editor' ]             = "//cdn.udx.io/lib/wpp.importer.editor";
-    config.paths[ 'wpp.importer.rets' ]               = "//cdn.udx.io/lib/wpp.importer.rets";
+    config.paths[ 'wpp.importer.overview' ]           = "//cdn.udx.io/wpp.importer.overview";
+    config.paths[ 'wpp.importer.editor' ]             = "//cdn.udx.io/wpp.importer.editor";
+    config.paths[ 'wpp.importer.rets' ]               = "//cdn.udx.io/wpp.importer.rets";
 
     /**
      * Trims the . and .. from an array of path segments.
@@ -1217,15 +1348,8 @@ var requirejs, require, define;
         //be relative to baseUrl in the end.
         if( baseName ) {
           if( getOwn( config.pkgs, baseName ) ) {
-            //If the baseName is a package name, then just treat it as one
-            //name to concat the name with.
             normalizedBaseParts = baseParts = [baseName];
           } else {
-            //Convert baseName to array, and lop off the last part,
-            //so that . matches that 'directory' and not name of the baseName's
-            //module. For instance, baseName of 'one/two/three', maps to
-            //'one/two/three.js', but we want the directory, 'one/two' for
-            //this normalization.
             normalizedBaseParts = baseParts.slice( 0, baseParts.length - 1 );
           }
 
@@ -2829,6 +2953,9 @@ var requirejs, require, define;
    * AMD loaders on globally agreed names.
    */
   req.config = function( config ) {
+    if( !config ) {
+      return cfg;
+    }
     return req( config );
   };
 
@@ -2851,37 +2978,50 @@ var requirejs, require, define;
     require = req;
   }
 
-  req.version = version;
+  Object.defineProperties( req, {
+    version: {
+      value: version,
+      enumerable: true,
+      configurable: false,
+      writable: false
+    },
+    showHelp: {
+      get: function showHelp() {
+        console.info( 'requires.js help' );
+        console.info( 'Available Paths:' );
+
+        for( var _name in req.s.contexts._.config.paths ) {
+          console.info( _name );
+        }
+
+      },
+      enumerable: false,
+      configurable: false
+    }
+  })
 
   //Used to filter out dependencies that are already paths.
   req.jsExtRegExp = /^\/|:|\?|\.js$/;
   req.isBrowser = isBrowser;
+
   s = req.s = {
     contexts: contexts,
     newContext: newContext
   };
 
   //Create default context.
-  req( {} );
+  req( [ 'udx' ] );
 
   //Exports some context-sensitive methods on global require.
-  each( [
-    'toUrl', 'undef', 'defined', 'specified'
-  ], function( prop ) {
-    //Reference from contexts instead of early binding to default context,
-    //so that during builds, the latest instance of the default context
-    //with its config gets used.
+  each( [ 'toUrl', 'undef', 'defined', 'specified' ], function( prop ) {
     req[prop] = function() {
       var ctx = contexts[defContextName];
       return ctx.require[prop].apply( ctx, arguments );
     };
-  } );
+  });
 
   if( isBrowser ) {
     head = s.head = document.getElementsByTagName( 'head' )[0];
-    //If BASE tag is in play, using appendChild is a problem for IE6.
-    //When that browser dies, this can be removed. Details in this jQuery bug:
-    //http://dev.jquery.com/ticket/2709
     baseElement = document.getElementsByTagName( 'base' )[0];
     if( baseElement ) {
       head = s.head = baseElement.parentNode;
@@ -2931,31 +3071,17 @@ var requirejs, require, define;
 
           context.log( 'json parsed', _model );
 
-          // udx.deepExtend( context );
-
-          //context.config.name = _model.name;
-
-          //context.log( 'context', context );
           context.log( 'context.registry', context.registry );
-
-          // context.configure( _model );
 
           context.completeLoad( moduleName );
 
           currentlyAddingScript = null;
 
-          context.define( _model.name, function() {
-            context.log( 'alsdfjksalkfj ' );
-
-            return _model.data;
-
-          } );
-
         } catch( error ) {
           console.error( error );
         }
 
-      } );
+      });
 
     }
 
@@ -2966,52 +3092,18 @@ var requirejs, require, define;
       node.setAttribute( 'data-requirecontext', context.contextName );
       node.setAttribute( 'data-requiremodule', moduleName );
 
-      //Set up load listener. Test attachEvent first because IE9 has
-      //a subtle issue in its addEventListener and script onload firings
-      //that do not match the behavior of all other browsers with
-      //addEventListener support, which fire the onload event for a
-      //script right after the script execution. See:
-      //https://connect.microsoft.com/IE/feedback/details/648057/script-onload-event-is-not-fired-immediately-after-script-execution
-      //UNFORTUNATELY Opera implements attachEvent but does not follow the script
-      //script execution mode.
       if( node.attachEvent && //Check if node.attachEvent is artificially added by custom script or
-        //natively supported by browser
-        //read https://github.com/jrburke/requirejs/issues/187
-        //if we can NOT find [native code] then it must NOT natively supported.
-        //in IE8, node.attachEvent does not have toString()
-        //Note the test for "[native code" with no closing brace, see:
-        //https://github.com/jrburke/requirejs/issues/273
         !(node.attachEvent.toString && node.attachEvent.toString().indexOf( '[native code' ) < 0) && !isOpera ) {
-        //Probably IE. IE (at least 6-8) do not fire
-        //script onload right after executing the script, so
-        //we cannot tie the anonymous define call to a name.
-        //However, IE reports the script as being in 'interactive'
-        //readyState at the time of the define call.
         useInteractive = true;
-
         node.attachEvent( 'onreadystatechange', context.onScriptLoad );
-        //It would be great to add an error handler here to catch
-        //404s in IE9+. However, onreadystatechange will fire before
-        //the error handler, so that does not help. If addEventListener
-        //is used, then IE will fire error before load, but we cannot
-        //use that pathway given the connect.microsoft.com issue
-        //mentioned above about not doing the 'script execute,
-        //then fire the script load event listener before execute
-        //next script' that other browsers do.
-        //Best hope: IE10 fixes the issues,
-        //and then destroys all installs of IE 6-9.
-        //node.attachEvent('onerror', context.onScriptError);
       } else {
         node.addEventListener( 'load', context.onScriptLoad, false );
         node.addEventListener( 'error', context.onScriptError, false );
       }
       node.src = url;
 
-      //For some cache cases in IE 6-8, the script executes before the end
-      //of the appendChild execution, so to tie an anonymous define
-      //call to the module name (which is stored on the node), hold on
-      //to a reference to this node, but clear after the DOM insertion.
       currentlyAddingScript = node;
+
       if( baseElement ) {
         head.insertBefore( node, baseElement );
       } else {
@@ -3021,7 +3113,10 @@ var requirejs, require, define;
 
       return node;
 
-    } else if( isWebWorker ) {
+    }
+
+    if( isWebWorker ) {
+
       try {
         //In a web worker, use importScripts. This is not a very
         //efficient use of importScripts, importScripts will block until
@@ -3036,10 +3131,16 @@ var requirejs, require, define;
       } catch( e ) {
         context.onError( makeError( 'importscripts', 'importScripts failed for ' + moduleName + ' at ' + url, e, [moduleName] ) );
       }
+
     }
 
   };
 
+  /**
+   * Get Interactive Script
+   *
+   * @returns {*}
+   */
   function getInteractiveScript() {
     if( interactiveScript && interactiveScript.readyState === 'interactive' ) {
       return interactiveScript;
@@ -3174,7 +3275,7 @@ var requirejs, require, define;
    * return a value to define the module corresponding to the first argument's
    * name.
    */
-  define = function( name, deps, callback ) {
+  define = function define( name, deps, callback ) {
     var node, context;
 
     //Allow for anonymous modules
@@ -3248,23 +3349,9 @@ var requirejs, require, define;
     return eval( text );
   };
 
+  define( 'udx', udxBaseModule.create );
+
   //Set up with config info.
   req( cfg );
 
 }( this ));
-
-/**
- * Define Test Module.
- *
- */
-if( 'function' === typeof define ) {
-  define( 'udx.test', function() {
-    console.debug( 'udx.test', 'works' );
-
-    return {
-      ok: true,
-      version: require.version
-    }
-
-  } );
-}

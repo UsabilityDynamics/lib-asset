@@ -24,6 +24,17 @@ The size of the main http://cdn.udx.io/udx.requires.js file is:
 * 17.7 KB - Minified.
 * 69.8 KB - Unminified.
 
+### Shims
+
+* Object.extend
+* Object.defineSchema
+* Object.validateSchema
+* Object.create
+* Object.defineProperty
+* Object.defineProperties
+* Object.getOwnPropertyDescriptor
+* Object.getOwnPropertyNames
+
 ## Usage
 
 ### Initialize Require Client
@@ -33,6 +44,7 @@ The size of the main http://cdn.udx.io/udx.requires.js file is:
 * data-base-url
 * data-model
 * data-version - Will append a "ver=X.X" version to each requested script.
+* data-config - JSON configuration string, may otherwise be set as inner-content of the <script> tag.
 * data-main
 * data-status - (loading|ready|error)
 * data-requiremodule
