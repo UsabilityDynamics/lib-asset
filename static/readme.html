@@ -141,6 +141,17 @@ The app.config.js file includes:</p>
 <li>17.7 KB - Minified.</li>
 <li>69.8 KB - Unminified.</li>
 </ul>
+<h3 id="shims">Shims</h3>
+<ul>
+<li>Object.extend</li>
+<li>Object.defineSchema</li>
+<li>Object.validateSchema</li>
+<li>Object.create</li>
+<li>Object.defineProperty</li>
+<li>Object.defineProperties</li>
+<li>Object.getOwnPropertyDescriptor</li>
+<li>Object.getOwnPropertyNames</li>
+</ul>
 <h2 id="usage">Usage</h2>
 <h3 id="initialize-require-client">Initialize Require Client</h3>
 <ul>
@@ -149,6 +160,7 @@ The app.config.js file includes:</p>
 <li>data-base-url</li>
 <li>data-model</li>
 <li>data-version - Will append a &quot;ver=X.X&quot; version to each requested script.</li>
+<li>data-config - JSON configuration string, may otherwise be set as inner-content of the <script> tag.</li>
 <li>data-main</li>
 <li>data-status - (loading|ready|error)</li>
 <li>data-requiremodule</li>
