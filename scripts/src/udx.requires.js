@@ -255,7 +255,6 @@ var requirejs, require, define;
   /**
    * Extend Target Object
    *
-   * @source https://github.com/knockout/knockout/blob/master/src/utils.js
    * @param target
    * @param source
    * @returns {*}
@@ -1228,6 +1227,7 @@ var requirejs, require, define;
     config.paths[ 'swiper' ]                          = '//cdn.udx.io/swiper';
     config.paths[ 'swiper.scrollbar' ]                = '//cdn.udx.io/swiper.scrollbar';
     config.paths[ 'elastic.client' ]                  = '//cdn.udx.io/elastic.client';
+    config.paths[ 'n33.skel' ]                        = '//cdn.udx.io/n33.skel';
     config.paths[ 'parallax' ]                        = '//cdn.udx.io/parallax';
     config.paths[ 'pace' ]                            = '//cdn.udx.io/pace';
     config.paths[ 'history' ]                         = '//cdn.udx.io/history';
