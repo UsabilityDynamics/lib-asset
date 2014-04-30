@@ -38,6 +38,11 @@ The size of the main http://cdn.udx.io/udx.requires.js file is:
 * Object.getOwnPropertyDescriptor
 * Object.getOwnPropertyNames
 
+## Require.js Methods
+
+* get - Get configuration value.
+* set - Set configuration value. Same as require.config({ key: value });
+
 ## Usage
 
 ### Initialize Require Client

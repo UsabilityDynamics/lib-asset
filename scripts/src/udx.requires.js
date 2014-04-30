@@ -13,7 +13,7 @@ var requirejs, require, define;
 
 (function( global ) {
 
-  var version = '3.1.0';
+  var version = '3.1.1';
 
   var req, s, head, baseElement, dataMain, src, interactiveScript, currentlyAddingScript, mainScript, subPath, commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg, cjsRequireRegExp = /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g, jsSuffixRegExp = /\.js$/, currDirRegExp = /^\.\//, op = Object.prototype, ostring = op.toString, hasOwn = op.hasOwnProperty, ap = Array.prototype, apsp = ap.splice, isBrowser = !!(typeof window !== 'undefined' && typeof navigator !== 'undefined' && window.document), isWebWorker = !isBrowser && typeof importScripts !== 'undefined';
   var readyRegExp = isBrowser && navigator.platform === 'PLAYSTATION 3' ? /^complete$/ : /^(complete|loaded)$/, defContextName = '_';
@@ -113,7 +113,6 @@ var requirejs, require, define;
       }
     }
   }, false );
-
 
   /**
    * UDX Base Application
@@ -3008,6 +3007,26 @@ var requirejs, require, define;
     contexts: contexts,
     newContext: newContext
   };
+
+  /**
+   * Get Setting Key.
+   *
+   * @param key
+   * @returns {*}
+   */
+  req.getOption = function getOption( key ) {
+    return ( cfg || this.s.contexts._.config )[ key ];
+  }
+
+  /**
+   * Set Setting Value.
+   *
+   * @param key
+   * @param value
+   */
+  req.setOption = function setOption( key, value ) {
+    ( cfg || this.s.contexts._.config )[ key ] = value;
+  }
 
   //Create default context.
   req( [ 'udx' ] );
