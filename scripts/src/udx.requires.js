@@ -1244,7 +1244,7 @@ var requirejs, require, define;
 
     // UI Library.
     config.paths[ 'udx.ui.jquery.tabs' ]              = "//cdn.udx.io/udx.ui.jquery.tabs";
-    config.paths[ 'udx.ui.sticky-header' ]            = "//cdn.udx.io/udx.ui.sticky-header";
+    config.paths[ 'udx.ui.sticky' ]                   = "//cdn.udx.io/udx.ui.sticky";
     config.paths[ 'udx.ui.dynamic-table' ]            = "//cdn.udx.io/udx.ui.dynamic-table";
     config.paths[ 'udx.ui.parallax' ]                 = "//cdn.udx.io/udx.ui.parallax";
     config.paths[ 'udx.ui.scrollr' ]                  = "//cdn.udx.io/udx.ui.scrollr";
@@ -1282,8 +1282,13 @@ var requirejs, require, define;
     config.paths[ 'udx.settings' ]                    = "//cdn.udx.io/udx.settings";
     config.paths[ 'udx.storage' ]                     = "//cdn.udx.io/udx.storage";
 
-    // WP Theme
+    // SPA.
     config.paths[ 'udx.spa' ]                         = "//cdn.udx.io/udx.spa";
+    config.paths[ 'udx.spa.web' ]                     = "//cdn.udx.io/udx.spa.web";
+    config.paths[ 'udx.spa.mobile' ]                  = "//cdn.udx.io/udx.spa.mobile";
+    config.paths[ 'udx.spa.hybrid' ]                  = "//cdn.udx.io/udx.spa.hybrid";
+
+    // WP Theme
     config.paths[ 'udx.wp.spa' ]                      = "//cdn.udx.io/udx.wp.spa";
     config.paths[ 'udx.wp.editor' ]                   = "//cdn.udx.io/udx.wp.editor";
     config.paths[ 'udx.wp.theme' ]                    = "//cdn.udx.io/udx.wp.theme";
