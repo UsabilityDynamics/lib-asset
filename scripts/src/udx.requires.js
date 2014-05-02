@@ -1146,6 +1146,9 @@ var requirejs, require, define;
           "knockout": {
             // exports: "knockout"
           },
+          "google.jsapi": {
+            exports: "google"
+          },
           "isotope": {
             exports: "Isotope"
           },
@@ -1216,12 +1219,14 @@ var requirejs, require, define;
         config: {}
       };
 
+
     config.paths[ 'async' ]                           = "//cdnjs.cloudflare.com/ajax/libs/async/0.2.7/async.min";
     config.paths[ 'datatables' ]                      = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
     config.paths[ 'jquery.ui' ]                       = "//code.jquery.com/ui/1.10.3/jquery-ui";
     config.paths[ 'jquery.validation' ]               = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
     config.paths[ 'twitter.bootstrap' ]               = "//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min";
 
+    config.paths[ 'google.jsapi' ]                    = '//www.google.com/jsapi/?v=';
     config.paths[ 'knockout' ]                        = '//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1';
     config.paths[ 'knockout.mapping' ]                = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
     config.paths[ 'knockout.localStorage' ]           = '//cdn.udx.io/knockout.localStorage';
@@ -1248,6 +1253,10 @@ var requirejs, require, define;
     config.paths[ 'jquery.resizely' ]                 = '//cdn.udx.io/jquery.resizely';
     config.paths[ 'jquery.lazyload' ]                 = '//cdn.udx.io/jquery.lazyload';
     config.paths[ 'jquery.scrollstop' ]               = '//cdn.udx.io/jquery.scrollstop';
+
+    // Elastic Analysis
+    config.paths[ 'analysis.client' ]                 = '//cdn.udx.io/analysis.client';
+    config.paths[ 'analysis.visualizer' ]             = '//cdn.udx.io/analysis.visualizer';
 
     // UI Library.
     config.paths[ 'udx.ui.jquery.tabs' ]              = "//cdn.udx.io/udx.ui.jquery.tabs";
