@@ -1232,6 +1232,7 @@ var requirejs, require, define;
     config.paths[ 'history' ]                         = '//cdn.udx.io/history';
     config.paths[ 'sammy' ]                           = '//cdn.udx.io/sammy';
     config.paths[ 'emitter' ]                         = '//cdn.udx.io/emitter';
+    config.paths[ 'modernizr' ]                       = '//cdn.udx.io/modernizr';
     config.paths[ 'resizely' ]                        = '//cdn.udx.io/resizely';
     config.paths[ 'jquery' ]                          = '//cdn.udx.io/jquery';
     config.paths[ 'jquery.scrollto' ]                 = '//cdn.udx.io/jquery.scrollto';
@@ -1298,6 +1299,10 @@ var requirejs, require, define;
     config.paths[ 'wpp.importer.overview' ]           = "//cdn.udx.io/wpp.importer.overview";
     config.paths[ 'wpp.importer.editor' ]             = "//cdn.udx.io/wpp.importer.editor";
     config.paths[ 'wpp.importer.rets' ]               = "//cdn.udx.io/wpp.importer.rets";
+
+    // Misc
+    config.paths[ 'udx.social.stream' ]               = "//cdn.udx.io/udx.social.stream";
+
 
     /**
      * Trims the . and .. from an array of path segments.
