@@ -1146,6 +1146,9 @@ var requirejs, require, define;
           "knockout": {
             // exports: "knockout"
           },
+          "isotope": {
+            exports: "Isotope"
+          },
           "knockout.mapping": {
             exports: "knockout.mapping",
             deps: [ 'knockout' ]
