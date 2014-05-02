@@ -1220,9 +1220,11 @@ var requirejs, require, define;
     config.paths[ 'datatables' ]                      = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
     config.paths[ 'jquery.ui' ]                       = "//code.jquery.com/ui/1.10.3/jquery-ui";
     config.paths[ 'jquery.validation' ]               = '//cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.min';
+    config.paths[ 'twitter.bootstrap' ]               = "//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min";
+
     config.paths[ 'knockout' ]                        = '//ajax.aspnetcdn.com/ajax/knockout/knockout-2.2.1';
     config.paths[ 'knockout.mapping' ]                = '//cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min';
-    config.paths[ 'twitter.bootstrap' ]               = "//netdna.bootstrapcdn.com/bootstrap/3.0.3/js/bootstrap.min";
+    config.paths[ 'knockout.localStorage' ]           = '//cdn.udx.io/knockout.localStorage';
 
     // Local Vendors.
     config.paths[ 'skrollr' ]                         = '//cdn.udx.io/skrollr';
