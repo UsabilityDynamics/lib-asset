@@ -1234,6 +1234,7 @@ var requirejs, require, define;
     config.paths[ 'emitter' ]                         = '//cdn.udx.io/emitter';
     config.paths[ 'modernizr' ]                       = '//cdn.udx.io/modernizr';
     config.paths[ 'resizely' ]                        = '//cdn.udx.io/resizely';
+    config.paths[ 'isotope' ]                         = '//cdn.udx.io/isotope';
     config.paths[ 'jquery' ]                          = '//cdn.udx.io/jquery';
     config.paths[ 'jquery.scrollto' ]                 = '//cdn.udx.io/jquery.scrollto';
     config.paths[ 'jquery.parallax' ]                 = '//cdn.udx.io/jquery.parallax';
