@@ -1172,6 +1172,10 @@ var requirejs, require, define;
             exports: 'jQuery.fn.spin',
             deps: [ 'jquery' ]
           },
+          "jquery.elasticsearch": {
+            exports: 'jQuery.es',
+            deps: [ 'jquery' ]
+          },
           "jquery.fancybox": {
             exports: 'jQuery.fn.fancybox',
             deps: [ 'jquery' ]
@@ -1253,6 +1257,7 @@ var requirejs, require, define;
     config.paths[ 'jquery.resizely' ]                 = '//cdn.udx.io/jquery.resizely';
     config.paths[ 'jquery.lazyload' ]                 = '//cdn.udx.io/jquery.lazyload';
     config.paths[ 'jquery.scrollstop' ]               = '//cdn.udx.io/jquery.scrollstop';
+    config.paths[ 'jquery.elasticsearch' ]            = '//cdn.udx.io/jquery.elasticsearch';
 
     // Elastic Analysis
     config.paths[ 'analysis.client' ]                 = '//cdn.udx.io/analysis.client';
