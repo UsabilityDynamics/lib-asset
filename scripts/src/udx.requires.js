@@ -1173,8 +1173,8 @@ var requirejs, require, define;
             deps: [ 'jquery' ]
           },
           "jquery.elasticsearch": {
-            exports: 'jQuery.es',
-            deps: [ 'jquery' ]
+            exports: 'jQuery.es'
+            // deps: [ 'jquery' ]
           },
           "jquery.fancybox": {
             exports: 'jQuery.fn.fancybox',
@@ -1196,6 +1196,10 @@ var requirejs, require, define;
             exports: 'jQuery.fn.lazyload',
             deps: [ 'jquery' ]
           },
+          "jquery.validation": {
+            exports: 'jQuery.validation',
+            deps: [ 'jquery' ]
+          },
           "sammy": {
             exports: 'sammy',
             deps: [ 'jquery' ]
@@ -1205,10 +1209,6 @@ var requirejs, require, define;
           },
           "swiper": {
             exports: 'Swiper',
-            deps: [ 'jquery' ]
-          },
-          "jquery.validation": {
-            exports: 'jQuery.validation',
             deps: [ 'jquery' ]
           },
           "datatables": {
@@ -1589,12 +1589,9 @@ var requirejs, require, define;
       var id = depMap.id;
       var mod = getOwn( registry, id );
 
-      //console.debug( 'getModule', context.config.shim );
-
       if( !mod ) {
         mod = registry[id] = new context.Module( depMap );
       }
-
 
       if( context.config.shim[ id ] && context.config.shim[ id ].exports ) {
         var exportName = context.config.shim[ id ].exports;
@@ -1604,7 +1601,6 @@ var requirejs, require, define;
           mod.inWindow = true;
         }
       }
-
 
       return mod;
     }
