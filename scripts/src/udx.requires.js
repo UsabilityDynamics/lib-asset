@@ -451,6 +451,8 @@ var requirejs, require, define;
      */
     fetch_json_file: function( url, _callback ) {
 
+      var http_request;
+
       if( window.XMLHttpRequest ) {
         http_request = new XMLHttpRequest();
       } else if( window.ActiveXObject ) {
@@ -1515,7 +1517,6 @@ var requirejs, require, define;
      * @returns {Object}
      */
     function makeModuleMap( name, parentModuleMap, isNormalized, applyMap ) {
-
       var url, pluginModule, suffix, nameParts, prefix = null, parentName = parentModuleMap ? parentModuleMap.name : null, originalName = name, isDefine = true, normalizedName = '';
 
       //If no name, then it means it is a require call, generate an
@@ -1558,6 +1559,7 @@ var requirejs, require, define;
           isNormalized = true;
 
           url = context.nameToUrl( normalizedName );
+
         }
       }
 
@@ -1818,6 +1820,8 @@ var requirejs, require, define;
         return onError( err );
       }
 
+      // console.log( 'reqCalls', reqCalls );
+
       //Not expired, check for a cycle.
       if( needCycleCheck ) {
         each( reqCalls, function( mod ) {
@@ -1831,12 +1835,14 @@ var requirejs, require, define;
       if( (!expired || usingPathFallback) && stillLoading ) {
         //Something is still waiting to load. Wait for it, but only
         //if a timeout is not already in effect.
+
         if( (isBrowser || isWebWorker) && !checkLoadedTimeoutId ) {
           checkLoadedTimeoutId = setTimeout( function() {
             checkLoadedTimeoutId = 0;
             checkLoaded();
           }, 50 );
         }
+
       }
 
       inCheckLoaded = false;
@@ -1909,10 +1915,12 @@ var requirejs, require, define;
         //the dependencies are not known until init is called. So
         //if enabled previously, now trigger dependencies as enabled.
         if( options.enabled || this.enabled ) {
-          //Enable this module and dependencies.
-          //Will call this.check()
+          // Enable this module and dependencies.
+          // Will call this.check()
+          // console.log( 'enable', this.map.id );
           this.enable();
         } else {
+          // console.log( 'check', this.map.id );
           this.check();
         }
       },
@@ -1956,24 +1964,29 @@ var requirejs, require, define;
           } )( this.shim.deps || [], bind( this, function() {
               return map.prefix ? this.callPlugin() : this.load();
             } ) );
+
         } else {
-          //Regular dependency.
+          // console.log( 'load regular dependency', map.id, map );
+          // Regular dependency.
           return map.prefix ? this.callPlugin() : this.load();
         }
+
       },
 
       load: function() {
-        context.log( 'Module.load', this.map.id, this.map.url );
+        // console.log( 'Module.load', this.map.id, this.map.url );
         var url = this.map.url;
 
         if( this.inWindow ) {
-          console.debug( 'Module.load', this.map.id, 'inWindow', context );
-          //return;
+          // console.debug( 'Module.load', this.map.id, 'inWindow', context );
+          // return;
         }
 
         //Regular dependency.
         if( !urlFetched[url] ) {
           urlFetched[url] = true;
+          // console.log( 'this.map.id, url', this.map.id, url );
+          // console.log( 'context.load', context.load );
           context.load( this.map.id, url );
         }
 
@@ -1983,15 +1996,14 @@ var requirejs, require, define;
        * Checks if the module is ready to define itself, and if so,
        * define it.
        */
-      check: function() {
-        context.log( 'Module.check', this.map.id, this.map.url, this.inWindow, this.depExports );
+      check: function moduleCheck() {
+        // context.log( 'Module.moduleCheck', this.map.id, this.map.url, this.inWindow, this.depExports );
 
         if( !this.enabled || this.enabling ) {
           return;
         }
 
         var err, cjsModule, id = this.map.id, depExports = this.depExports, exports = this.exports, factory = this.factory;
-
 
         // Already in window.. do not fetch. (@experimental)
         if( this.inWindow ) {
@@ -2000,17 +2012,6 @@ var requirejs, require, define;
           //this.inited = true;
           //this.enabled = true;
           //this.defining = false;
-
-          //this.exports = window[ this.shim.exports ]
-
-          //console.debug( 'this.exports', this.inited );
-          //this.defineEmitted = true;
-          //this.emit( 'defined', this.exports );
-          //this.defineEmitComplete = true;
-//          this.depExports = true;
-          //context.completeLoad( this.map.id );
-          //context.log( 'Module.check', this.map.id, this.map.url, 'in window', this.depExports );
-          //return;
         }
 
         if( !this.inited ) {
@@ -2126,6 +2127,7 @@ var requirejs, require, define;
             //prefix and name should already be normalized, no need
             //for applying map config again either.
             normalizedMap = makeModuleMap( map.prefix + '!' + name, this.map.parentMap );
+
             on( normalizedMap, 'defined', bind( this, function( value ) {
               this.init( [], function() {
                 return value;
@@ -2242,10 +2244,12 @@ var requirejs, require, define;
 
       },
 
-      enable: function() {
-        context.log( 'Module.enable', this.map.id, this.map.url );
+      enable: function moduleEnable() {
+        context.log( 'Module.moduleEnable', this.map.id, this.map.url );
+
 
         enabledRegistry[this.map.id] = this;
+
         this.enabled = true;
 
         //Set flag mentioning that the module is enabling,
@@ -2254,14 +2258,22 @@ var requirejs, require, define;
         //with the depCount still being zero.
         this.enabling = true;
 
+        // console.log( 'Module.moduleEnable', this.depMaps );
+
+        var __canBatch = []; // [ 'pace', 'knockout.mapping' ];
+        var __batchQueue = [];
+
         //Enable each dependency
-        each( this.depMaps, bind( this, function( depMap, i ) {
-          var id, mod, handler;
+        each( this.depMaps, bind( this, function eachDependency( depMap, i ) {
+          // console.log( 'Module.moduleEnable.eachDependency', depMap, i );
+
+          var id;
+          var mod;
+          var handler;
 
           if( typeof depMap === 'string' ) {
-            //Dependency needs to be converted to a depMap
-            //and wired up to this module.
-            depMap = makeModuleMap( depMap, (this.map.isDefine ? this.map : this.map.parentMap), false, !this.skipMap );
+            depMap = makeModuleMap( depMap, ( this.map.isDefine ? this.map : this.map.parentMap ), false, !this.skipMap );
+
             this.depMaps[i] = depMap;
 
             handler = getOwn( handlers, depMap.id );
@@ -2271,17 +2283,51 @@ var requirejs, require, define;
               return;
             }
 
+            // console.log( )
+
             this.depCount += 1;
 
-            on( depMap, 'defined', bind( this, function( depExports ) {
-              this.defineDep( i, depExports );
-              this.check();
+            if( __canBatch.indexOf( depMap.id )  === -1 ) {
+
+              // Emitted once module is
+              on( depMap, 'defined', bind( this, function( depExports ) {
+                this.defineDep( i, depExports );
+                this.check();
+              } ) );
+
+              if( this.errback ) {
+                on( depMap, 'error', bind( this, this.errback ) );
+              }
+
+            } else {
+              console.log( '__canBatch', depMap.id );
+
+              __batchQueue.push({
+                id: depMap.id,
+                depMap: depMap,
+                mod: registry[ id ],
+                this: this
+              });
+
+            }
+
+          }
+
+          // All batchable libraries are combined.
+          each( __batchQueue, function eachBatchedItem( batchedItem ) {
+            // console.log( 'eachBatchedItem', batchedItem );
+
+            on( batchedItem.depMap, 'defined', bind( batchedItem.this, function( depExports ) {
+              //this.defineDep( i, depExports );
+              //this.check();
             } ) );
 
-            if( this.errback ) {
-              on( depMap, 'error', bind( this, this.errback ) );
+            if( batchedItem.this.errback ) {
+              //on( batchedItem.depMap, 'error', bind( this, this.errback ) );
             }
-          }
+
+          })
+
 
           id = depMap.id;
           mod = registry[id];
@@ -2292,10 +2338,14 @@ var requirejs, require, define;
           if( !hasProp( handlers, id ) && mod && !mod.enabled ) {
             context.enable( depMap, this );
           }
+
+
         } ) );
 
-        //Enable each plugin that is used in
-        //a dependency
+        // console.log( 'Module.moduleEnable', 'this.pluginMaps',  this.pluginMaps );
+
+        // Enable each plugin that is used in
+        // a dependency
         eachProp( this.pluginMaps, bind( this, function( pluginMap ) {
           var mod = getOwn( registry, pluginMap.id );
           if( mod && !mod.enabled ) {
@@ -2306,6 +2356,7 @@ var requirejs, require, define;
         this.enabling = false;
 
         this.check();
+
       },
 
       on: function( name, cb ) {
@@ -2657,7 +2708,7 @@ var requirejs, require, define;
             id = makeModuleMap( id, relMap, false, true ).id;
             return hasProp( defined, id ) || hasProp( registry, id );
           }
-        } );
+        });
 
         //Only allow undef on top level require calls
         if( !relMap ) {
@@ -2693,6 +2744,7 @@ var requirejs, require, define;
 
               cleanRegistry( id );
             }
+
           };
         }
 
@@ -2840,7 +2892,7 @@ var requirejs, require, define;
           // Convert urlArgs to string if object given.
           var _args =  Object.keys( config.urlArgs ).length ? stringifyObject( config.urlArgs ) : config.urlArgs;
 
-          url = config.urlArgs ? url + ((url.indexOf( '?' ) === -1 ? '?' : '&') + _args) : url;
+          url = config.urlArgs ? url + ( _args ? ( url.indexOf( '?' ) === -1 ? '?' : '&' ) + _args : '' ) : url;
 
         }
 
@@ -2851,6 +2903,7 @@ var requirejs, require, define;
       //Delegates to req.load. Broken out as a separate function to
       //allow overriding in the optimizer.
       load: function( id, url ) {
+        // console.log( 'req.load', req.load );
         req.load( context, id, url );
       },
 
@@ -3131,29 +3184,34 @@ var requirejs, require, define;
     }
 
     if( isBrowser ) {
+
       //In the browser so use a script tag
       node = req.createNode( config, moduleName, url );
 
       node.setAttribute( 'data-requirecontext', context.contextName );
       node.setAttribute( 'data-requiremodule', moduleName );
 
-      if( node.attachEvent && //Check if node.attachEvent is artificially added by custom script or
-        !(node.attachEvent.toString && node.attachEvent.toString().indexOf( '[native code' ) < 0) && !isOpera ) {
+      //Check if node.attachEvent is artificially added by custom script or
+      if( node.attachEvent && !(node.attachEvent.toString && node.attachEvent.toString().indexOf( '[native code' ) < 0) && !isOpera ) {
         useInteractive = true;
         node.attachEvent( 'onreadystatechange', context.onScriptLoad );
       } else {
         node.addEventListener( 'load', context.onScriptLoad, false );
         node.addEventListener( 'error', context.onScriptError, false );
       }
+
       node.src = url;
 
       currentlyAddingScript = node;
 
       if( baseElement ) {
+        // console.log( 'req.load', 'baseElement', url );
         head.insertBefore( node, baseElement );
       } else {
+        // console.log( 'req.load', 'headElement', url );
         head.appendChild( node );
       }
+
       currentlyAddingScript = null;
 
       return node;
@@ -3173,6 +3231,7 @@ var requirejs, require, define;
 
         //Account for anonymous modules
         context.completeLoad( moduleName );
+
       } catch( e ) {
         context.onError( makeError( 'importscripts', 'importScripts failed for ' + moduleName + ' at ' + url, e, [moduleName] ) );
       }
@@ -3283,6 +3342,7 @@ var requirejs, require, define;
      *
      */
     req.nextTick( function otherScriptTags() {
+     //  console.debug( 'otherScriptTags' );
 
       getAllElementsWithAttribute( 'data-main', 'script' ).each( function( element ) {
         //context.log( 'data-main script', element );
