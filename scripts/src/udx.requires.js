@@ -1276,6 +1276,7 @@ var requirejs, require, define;
     config.paths[ 'udx.ui.gallery' ]                  = "//cdn.udx.io/udx.ui.gallery";
     config.paths[ 'udx.ui.stream' ]                   = "//cdn.udx.io/udx.ui.stream";
     config.paths[ 'udx.ui.video' ]                    = "//cdn.udx.io/udx.ui.video";
+    config.paths[ 'udx.ui.meta-box' ]                 = "//cdn.udx.io/udx.ui.meta-box";
     config.paths[ 'udx.ui.wp.editor.script' ]         = "//cdn.udx.io/udx.ui.wp.editor.script";
     config.paths[ 'udx.ui.wp.editor.style' ]          = "//cdn.udx.io/udx.ui.wp.editor.style";
     config.paths[ 'udx.ui.wp.customizer.style' ]      = "//cdn.udx.io/udx.ui.wp.customizer.style";
