@@ -7,13 +7,13 @@
  * * ECMA5 shim - defineProperty, getOwnPropertyDescriptor, etc.
  * * Object Validation methods - Object.defineSchema(), Object.validateSchema()
  *
- * @version 3.1.0
+ * @version 3.1.2
  */
 var requirejs, require, define;
 
 (function( global ) {
 
-  var version = '3.1.1';
+  var version = '3.1.2';
 
   var req, s, head, baseElement, dataMain, src, interactiveScript, currentlyAddingScript, mainScript, subPath, commentRegExp = /(\/\*([\s\S]*?)\*\/|([^:]|^)\/\/(.*)$)/mg, cjsRequireRegExp = /[^.]\s*require\s*\(\s*["']([^'"\s]+)["']\s*\)/g, jsSuffixRegExp = /\.js$/, currDirRegExp = /^\.\//, op = Object.prototype, ostring = op.toString, hasOwn = op.hasOwnProperty, ap = Array.prototype, apsp = ap.splice, isBrowser = !!(typeof window !== 'undefined' && typeof navigator !== 'undefined' && window.document), isWebWorker = !isBrowser && typeof importScripts !== 'undefined';
   var readyRegExp = isBrowser && navigator.platform === 'PLAYSTATION 3' ? /^complete$/ : /^(complete|loaded)$/, defContextName = '_';
@@ -328,7 +328,7 @@ var requirejs, require, define;
         location: 'http://cdn.udx.io/ace',
         main: 'ace',
         name: 'ace'
-      } );
+      });
 
       return packages;
 
@@ -383,10 +383,56 @@ var requirejs, require, define;
         /**
          * DOM Element Requires a Module
          *
+         * The module must return/export either a function or an object with a "create" property.
+         *
          * @param element
          */
         function loadRequires( element ) {
           //context.log( 'element[data-requires]', element );
+
+          function moduleError( error ) {
+            element.setAttribute( 'data-status', 'error' );
+            context.log( element.getAttribute( 'data-requires' ), 'not found.', error );
+          }
+
+          function moduleLoaded( callback ) {
+            context.log( 'moduleLoaded', typeof callback );
+
+            var _callback;
+            var _instance;
+
+            element.setAttribute( 'data-status', 'ready' );
+
+            if( 'object' === typeof callback && callback.create ) {
+              _callback = callback.create;
+            }
+
+            if( 'function' === typeof callback ) {
+              _callback = callback;
+            }
+
+            if( 'function' !== typeof _callback ) {
+              return false;
+            }
+
+            // Invoke module creation.
+            _instance = _callback.call( element, context );
+
+            // Subcribe to "loaded" event, if EventEmitter exists.
+            if( _instance && 'function' === typeof _instance.on ) {
+              _instance.on( 'loaded', instanceReady.bind( _instance, element ) );
+            } else {
+              instanceReady.call( _instance, element );
+            }
+
+            // Emit "loaded" event if EventEmitter exists.
+            if( _instance && 'function' === typeof _instance.emit ) {
+              _instance.emit.call( _instance, 'loaded', element );
+            }
+
+            return true;
+
+          }
 
           // Only load once.
           if( element.getAttribute( 'data-status' ) ) {
@@ -400,30 +446,8 @@ var requirejs, require, define;
 
           // console.dir( context.config.paths );
 
-          context.require( [ element.getAttribute( 'data-requires' ) ], function moduleLoaded( callback ) {
-            context.log( 'moduleLoaded', typeof callback );
-
-            element.setAttribute( 'data-status', 'ready' );
-
-            if( 'function' === typeof callback ) {
-
-              var _instance = callback.call( element, context );
-
-              if( _instance && 'function' === typeof _instance.emit ) {
-                _instance.emit.call( _instance, 'loaded', element );
-              }
-
-              if( _instance && 'function' === typeof _instance.on ) {
-                _instance.on( 'loaded', instanceReady.bind( _instance, element ) );
-              } else {
-                instanceReady.call( _instance, element );
-              }
-
-            }
-
-          }, function notFound( error ) {
-            context.log( element.getAttribute( 'data-requires' ), 'not found.', error );
-          } );
+          // Load required module. Can load from a URL or module pool.
+          context.require( [ element.getAttribute( 'data-requires' ) ], moduleLoaded, moduleError );
 
         }
 

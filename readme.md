@@ -96,6 +96,9 @@ $_requires->render_tag();
 <div data-requires="bootstrap.carousel"></div>
 ```
 
+## Version 3.1.2
+* Added "data-requires" module support for retunred object with "create" property for initialization.
+
 ## License
 
 (The MIT License)
