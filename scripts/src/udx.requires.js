@@ -180,7 +180,7 @@ var requirejs, require, define;
       configurable: true,
       writable: true
     }
-  })
+  });
 
   /**
    * Convert Object to URL Parameter String.
@@ -1263,6 +1263,7 @@ var requirejs, require, define;
 
     // Local Vendors.
     config.paths[ 'skrollr' ]                         = '//cdn.udx.io/skrollr';
+    config.paths[ 'scrollReveal' ]                    = '//cdn.udx.io/scrollReveal';
     config.paths[ 'swiper' ]                          = '//cdn.udx.io/swiper';
     config.paths[ 'swiper.scrollbar' ]                = '//cdn.udx.io/swiper.scrollbar';
     config.paths[ 'elastic.client' ]                  = '//cdn.udx.io/elastic.client';
@@ -1349,7 +1350,6 @@ var requirejs, require, define;
 
     // Misc
     config.paths[ 'udx.social.stream' ]               = "//cdn.udx.io/udx.social.stream";
-
 
     /**
      * Trims the . and .. from an array of path segments.
