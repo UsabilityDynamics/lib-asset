@@ -15,7 +15,7 @@ The app.config.js file includes:
 * baseUrl - Relative URL to assets, typically simply /assets.
 * paths - Reference to paths of all enqueued scripts via wp_enqueue_script() and dependencies that are not available via UDX CDN.
 * deps - All enqueued scripts that should be loaded on initialization, e.g. 'jquery', 'jquery.accordion', 'menufication-js', etc.
-* shim - Dependencies of enqueued scripts.
+* shim - Dependencies of enqueued scripts. 
 * config - Object containing all custom configuration such as Analytics ID, Locale Strings, Menufication settings, etc. This configuration does not take user session or application state into consideration.
 
 ## To Do
