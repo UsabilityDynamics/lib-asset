@@ -1,11 +1,11 @@
 {
   "name": "lib-requires",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Require Library.",
   "private": true,
   "repository": {
     "type": "git",
-    "url": "https://github.com/UsabilityDynamics/lib-requires"
+    "url": "https://github.com/udx/lib-requires"
   },
   "main": "scripts/udx.requires",
   "engines": {
